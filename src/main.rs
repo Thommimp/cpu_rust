@@ -49,9 +49,37 @@ fn read_binary(file_path: &str, output: &mut [u32; 100]) -> io::Result<usize> {
     Ok(count) // Return the number of instructions read
 }
 
+fn decode(input: &u32, registers: &mut [u32; 32]) {
+
+    registers[1] = 10;
+
+     
+
+     let reg1: u32 = (0xF8000 & input) >> 15;
+     let reg2: u32 = (0x1F00000 & input) >> 20;
+     let rd: u32 = (0xF80 & input) >> 7;
+
+    let opcode = input & 0x7F;
+    //println!("{:b}", reg1);
+    //println!("{:b}", input);
+    //println!("{:b}", reg2);
+    //println!("{:b}", rd);
+    
+
+
+     if opcode == 51 {
+         //51 = ADD function
+          registers[rd as usize] = registers[reg1 as usize] + registers[reg2 as usize];
+
+    }
+    println!("{:?}", registers[2]);
+
+}
+
 fn main() -> io::Result<()> {
     // Variable to hold up to 100 unsigned integers
     let mut memory: [u32; 100] = [0; 100];
+    let mut registers: [u32; 32] = [0; 32];
 
     // Call the read_binary function
     match read_binary("binary.txt", &mut memory) {
@@ -65,6 +93,10 @@ fn main() -> io::Result<()> {
             eprintln!("Error: {}", e);
         }
     }
+
+     decode(&memory[0], &mut registers);
+
+
 
     Ok(())
 }
