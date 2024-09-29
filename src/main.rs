@@ -1,46 +1,4 @@
 
-// use std::fs::File;
-// use std::io::{self, BufRead};
-// use std::path::Path;
-
-// fn read_binary(file_path: &str, output: &mut u32) -> io::Result<()> {
-//     // Specify the path to the text file
-//     let path = Path::new(file_path);
-
-//     // Open the file
-//     let file = File::open(&path)?;
-    
-//     // Create a buffered reader
-//     let reader = io::BufReader::new(file);
-    
-//     // Read the first line from the file
-//     if let Some(Ok(line)) = reader.lines().next() {
-//         // Convert the binary string to an unsigned 32-bit integer
-//         *output = u32::from_str_radix(line.trim(), 2)
-//             .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
-//         return Ok(());
-//     }
-
-//     Err(io::Error::new(io::ErrorKind::UnexpectedEof, "The file is empty or could not be read."))
-// }
-
-// fn main() -> io::Result<()> {
-//     // Variable to hold the unsigned integer
-//     let mut memory: [u32; 100] = [0; 100];
-
-//     // Call the read_binary function
-//     match read_binary("binary.txt", &mut memory[0]) {
-//         Ok(()) => {
-//             println!("The unsigned integer read from the binary string is: {}", memory[0]);
-//         },
-//         Err(e) => {
-//             eprintln!("Error: {}", e);
-//         }
-//     }
-
-//     Ok(())
-// }
-
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
