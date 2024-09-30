@@ -90,6 +90,7 @@ match opcode {
             1 => {
                 // SLL
                 println!("SLL");
+                
             }
             2 => {
                 // SLT
@@ -130,6 +131,61 @@ match opcode {
             }
             _ => {} // Handle other funct3 cases if needed
         }
+    }
+    19 => { //I TYPE INSTRUCTIONS
+        match funct3 {
+            0 => {
+                //ADDI
+                println!("ADD IMMEDIATE");
+            }
+
+            4 => {
+                //ADDI
+                println!("XOR IMMEDIATE");
+            }
+
+            6 => {
+                //ORI
+                println!("OR IMMEDIATE");
+            }
+            7 => {
+                //ANDI
+                println!("AND IMMEDIATE");
+            }
+            1 => {
+                //SLLI
+            }
+
+            5 => {
+                match funct7 {
+                    0 => {
+                        //SRLI
+                        println!("SRLI");
+
+                    }
+                    32 => {
+                        //SRAI
+                        println!("SRAI");
+                    }
+
+                    _ => {}
+
+                }
+            }
+            2 => {
+                //Set less than Imm
+                println!("SLTI");
+
+            }
+            3 => {
+                //set less than imm (U)
+                println!("set less than imm U");
+            }
+
+            _ => {} // Handle other func3 cases if needed
+
+        }
+
     }
     _ => {} // Handle other opcode cases if needed
 }
