@@ -58,21 +58,93 @@ fn decode(input: &u32, registers: &mut [u32; 32]) {
      let reg1: u32 = (0xF8000 & input) >> 15;
      let reg2: u32 = (0x1F00000 & input) >> 20;
      let rd: u32 = (0xF80 & input) >> 7;
+     let funct7 = (0xFE000000 & input) >> 25;
+     let funct3 = (0x7000 & input) >> 12;
 
     let opcode = input & 0x7F;
     //println!("{:b}", reg1);
     //println!("{:b}", input);
-    //println!("{:b}", reg2);
-    //println!("{:b}", rd);
+    println!("{:b}", funct3);
+    //println!("{:b}", funct7);
+
     
 
+match opcode {
+    51 => { // R-Type opcode
+        match funct3 {
+            0 => { // funct3 for ADD and SUB
+                match funct7 {
+                    0 => {
+                        // ADD function
+                        println!("ADD");
+                        registers[rd as usize] = registers[reg1 as usize] + registers[reg2 as usize];
+                    }
+                    32 => {
+                        // SUB function
+                        println!("SUB");
+                        registers[rd as usize] = registers[reg1 as usize] - registers[reg2 as usize];
+                    }
+                    _ => {} // Handle other funct7 cases if needed
+                }
+            }
+            1 => {
+                // SLL
+                println!("SLL");
+            }
+            2 => {
+                // SLT
+                println!("SLT");
+            }
+            4 => {
+                //XOR
+                println!("XOR");
 
-     if opcode == 51 {
-         //51 = ADD function
-          registers[rd as usize] = registers[reg1 as usize] + registers[reg2 as usize];
+            }
+            6 => {
+                //OR
+                println!("OR");
+            }
+            7 => {
+                //AND
+                println!("AND");
+            }
+            5 => {
+                match funct7 {
+                    0 => {
+                        //SRL
+                        println!("SRL");
+                    }
+                    32 => {
+                        //SRA
+                        println!("SRA");
+                    }
+
+                    _ => {}
+
+                }
+            }
+
+            3 => {
+                //SLTU
+                println!("SLTU");
+            }
+            _ => {} // Handle other funct3 cases if needed
+        }
+    }
+    _ => {} // Handle other opcode cases if needed
+}
+
+}
+
+fn pc_func(pc: &mut u32, ting: &u32, _offset: &mut u32, _branch: &mut u32) {
+
+    match ting {
+        1 => *pc = *pc + 1,
+        _ => println!("ERROR SOMETHING WENT VERY WRONG"),
+
 
     }
-    println!("{:?}", registers[2]);
+
 
 }
 
@@ -80,10 +152,16 @@ fn main() -> io::Result<()> {
     // Variable to hold up to 100 unsigned integers
     let mut memory: [u32; 100] = [0; 100];
     let mut registers: [u32; 32] = [0; 32];
+    let mut pc_counter: u32 = 0;
+    let mut branch: u32 = 0;
+    let mut offset: u32 = 0; 
+    let mut count2: usize = 0;  
+
 
     // Call the read_binary function
     match read_binary("binary.txt", &mut memory) {
         Ok(count) => {
+            count2 = count;
             println!("Read {} instructions from the binary file:", count);
             for i in 0..count {
                 println!("Memory[{}]: {}", i, memory[i]);
@@ -94,7 +172,11 @@ fn main() -> io::Result<()> {
         }
     }
 
+
      decode(&memory[0], &mut registers);
+
+     pc_func(&mut pc_counter, &1, &mut branch, &mut offset);
+     println!("{:?}", count2);
 
 
 
