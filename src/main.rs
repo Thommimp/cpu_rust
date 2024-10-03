@@ -1,6 +1,12 @@
 use std::fs::File;
 use std::io::{self, Read, BufReader};
 
+use memory::Memory;
+
+const MEMORY_CAPACITY: usize = 64*1024;
+
+mod memory;
+
 fn read_binary(file_path: &str, output: &mut [u32; 100]) -> io::Result<usize> {
     // Specify the path to the text file
     let path = std::path::Path::new(file_path);
@@ -213,6 +219,10 @@ fn main() -> io::Result<()> {
     let mut offset: u32 = 0; 
     let mut count2: usize = 0;  
 
+    let mut memory_struct = Memory::new(MEMORY_CAPACITY);
+
+    memory_struct.load_from_file("example.bin");
+    println!("{:X}", memory_struct.read_word(0));
 
     // Call the read_binary function
     match read_binary("binary.txt", &mut memory) {
@@ -238,10 +248,3 @@ fn main() -> io::Result<()> {
 
     Ok(())
 }
-
-
-
-
-
-
-
