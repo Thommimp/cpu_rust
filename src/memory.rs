@@ -49,9 +49,12 @@ impl Memory {
         self.data[index+3] = (data >> 8) as u8;
     }
     
-    pub fn load_from_file(&mut self, path: &str){
-        let program = fs::read(path).expect("Unable to read binary file");
-        assert!(self.data.len() >= program.len(), "Program is to large for the memory capacity");
-        self.data[0..program.len()].copy_from_slice(&program)
+    pub fn load_from_file(&mut self, path: &str) -> Result<usize, String>{
+        let program = fs::read(path).map_err(|e| format!("Failed to read file: {}", e))?;
+        if self.data.len() < program.len() {
+            return Err(String::from("Program is to large for the memory capacity"));
+        }
+        self.data[0..program.len()].copy_from_slice(&program);
+        Ok(program.len()/4)
     }
 }
