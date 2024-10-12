@@ -49,6 +49,31 @@ impl Memory {
         self.data[index+3] = (data >> 8) as u8;
     }
     
+    pub fn load_byte(&self, address: u32) -> u32 {
+        (self.read_byte(address) as i32) as u32
+    }
+    pub fn load_halfword(&self, address: u32) -> u32 {
+        (self.read_halfword(address) as i32) as u32
+    }
+    pub fn load_word(&self, address: u32) -> u32 {
+        self.read_word(address)
+    }
+    pub fn load_byte_unsigned(&self, address: u32) -> u32 {
+        self.read_byte(address) as u32
+    }
+    pub fn load_halfword_unsigned(&self, address: u32) -> u32 {
+        self.read_halfword(address) as u32
+    }
+    pub fn store_byte(&mut self, address: u32, data: u32) {
+        self.write_byte(address, data as u8)
+    }
+    pub fn store_halfword(&mut self, address: u32, data: u32) {
+        self.write_halfword(address, data as u16)
+    }
+    pub fn store_word(&mut self, address: u32, data: u32) {
+        self.write_word(address, data)
+    }
+    
     pub fn load_from_file(&mut self, path: &str) -> Result<usize, String>{
         let program = fs::read(path).map_err(|e| format!("Failed to read file: {}", e))?;
         if self.data.len() < program.len() {
