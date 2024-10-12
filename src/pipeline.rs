@@ -1,4 +1,4 @@
-use crate::cpu::Instruction;
+use crate::isa::Instruction;
 
 pub struct Pipeline {
     ifid: IfIdRegister,
