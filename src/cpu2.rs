@@ -1,8 +1,8 @@
 use std::string::String;
 
 use crate::pipeline::Pipeline;
-use crate::isa::
 use crate::memory::Memory;
+use crate::isa::*;
 
 pub struct Cpu {
     clock: usize,
@@ -38,7 +38,7 @@ impl Cpu {
         self.write_back();
         self.memory_access();
         self.execute();
-        self.decode();
+        let _ = self.decode();
         self.fetch();
         self.pipeline.tick();
         Ok(())
@@ -51,7 +51,7 @@ impl Cpu {
     fn decode(&mut self) -> Result<(), String> {
         let i_word = self.pipeline.get_inst_word();
         let inst = {
-            match decode_instruction(i_word) {
+            match phrase_instruction(i_word) {
                 Ok(inst) => inst,
                 Err(e) => return Err(e),
             }

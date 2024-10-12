@@ -18,43 +18,46 @@ pub const I_TYPE_MASK: u32 = OP_MASK | FN3_MASK;
 pub const S_TYPE_MASK: u32 = OP_MASK | FN3_MASK;
 pub const U_TYPE_MASK: u32 = OP_MASK;
 
-pub fn decode_instruction(i_word: u32) -> Result<Instruction, String> {
+
+#[derive(Clone)]
+pub struct Instruction {
+    pub opcode: u32,
+    pub mask: u32,
+    pub name: &'static str,
+    pub decode: fn(i_word: u32) -> InstructionArg,
+    pub ex_src: ExSrc,
+    pub execute: fn(op_1: u32, op_2: u32) -> u32,
+    pub mem_rw: MemRW,
+    pub wb_src: WBSrc,
+}
+
+#[derive(Clone)]
+pub enum ExSrc {
+    Reg2,
+    Imm,
+    None,
+}
+#[derive(Clone)]
+pub enum MemRW {
+    Read,
+    Write,
+    None,
+}
+#[derive(Clone)]
+pub enum WBSrc {
+    Memory,
+    Result,
+    None,
+}
+
+pub fn phrase_instruction(i_word: u32) -> Result<Instruction, String> {
+
     for (index, value) in INSTRUCTIONS.iter().enumerate() {
         if (i_word & INSTRUCTIONS[index].mask) == INSTRUCTIONS[index].opcode {
             return Ok((*value).clone());
         }
     }
     Err(String::from("Instruction not found"))
-}
-
-#[derive(Clone)]
-struct Instruction {
-    opcode: u32,
-    mask: u32,
-    name: &'static str,
-    decode: fn(i_word: u32) -> InstructionArg,
-    ex_src: ExSrc,
-    execute: fn(op_1: u32, op_2: u32) -> u32,
-    mem_rw: MemRW,
-    wb_src: WBSrc,
-}
-#[derive(Clone)]
-enum ExSrc {
-    Reg2,
-    Imm,
-    None,
-}
-#[derive(Clone)]
-enum MemRW {
-    Read,
-    Write,
-    None,
-}
-#[derive(Clone)]
-enum WBSrc {
-    Memory,
-    Result,
-    None,
 }
 
 pub const INSTRUCTIONS: &[Instruction] = &[
@@ -529,11 +532,11 @@ pub fn op_sra(op_1: u32, op_2: u32) -> u32 {
     ((op_1 as i32) >> (op_2 & 0x1F)) as u32
 }
 
-struct InstructionArg {
-    rd: usize,
-    rs1: usize,
-    rs2: usize,
-    imm: u32,
+pub struct InstructionArg {
+    pub rd: usize,
+    pub rs1: usize,
+    pub rs2: usize,
+    pub imm: u32,
 }
 
 fn decode_r_type(inst: u32) -> InstructionArg {

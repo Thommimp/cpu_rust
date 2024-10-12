@@ -6,10 +6,7 @@ mod registers;  // Declare the registers module
 
 use cpu::CPU;
 
-
-
 const MEMORY_CAPACITY: usize = 4096;
-const XLEN: usize = 32;
 
 fn combine_to_u32_array(array: &[u8]) -> Vec<u32> {
     let mut combined = Vec::new();
@@ -22,9 +19,6 @@ fn combine_to_u32_array(array: &[u8]) -> Vec<u32> {
     }
     combined
 }
-
-
-
 
 fn main() -> io::Result<()> {
 
@@ -43,13 +37,13 @@ fn main() -> io::Result<()> {
         }
     }
 
-    let combined = combine_to_u32_array(&cpu.memory.data);
+    // let combined = combine_to_u32_array(&cpu.memory.data);
 
     //println!("{:?}", combined[0]);
 
 
 
-    cpu.memory.write_byte(400, -2);
+    //cpu.memory.write_byte(400, -2);
      cpu.memory.write_byte(401, 1);
       cpu.memory.write_byte(403, 1);
 
@@ -57,7 +51,7 @@ fn main() -> io::Result<()> {
 
     cpu.registers.data[1] = 400;
 
-    cpu.execute_instruction(&combined[0]);
+    //cpu.execute_instruction(&combined[0]);
 
     //println!("{:?}", cpu.memory.read_word(504));
 
