@@ -1,8 +1,11 @@
 use std::io;
 
-mod cpu;        // Declare the cpu module
-mod memory;     // Declare the memory module
-mod registers;  // Declare the registers module
+mod cpu;
+mod memory;
+mod registers;
+mod cpu2;
+mod isa;
+mod pipeline;
 
 use cpu::CPU;
 
