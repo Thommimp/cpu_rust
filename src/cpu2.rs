@@ -119,4 +119,11 @@ impl Cpu {
             _ => (),
         };
     }
+    fn print_status(&self) {
+        println!("|-----------|");
+        for i in 31..0 {
+            println!("| R{:02}: {:5}|", i, self.x[i]);
+        }
+        println!("| PC: {:6}|", self.pc);
+    }
 }
