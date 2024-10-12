@@ -89,18 +89,18 @@ impl Cpu {
         match inst.mem_rw {
             MemRW::Read => {
                 memory = match inst.name {
-                    "lb" => self.memory.read_byte(address) as u32,
-                    "lh" => self.memory.read_halfword(address) as u32,
-                    "lw" => self.memory.read_word(address) as u32,
-                    "lbu" => self.memory.read_byte(address) as u32,
-                    "lhu" => self.memory.read_halfword(address) as u32,
+                    "lb" => self.memory.load_byte(address),
+                    "lh" => self.memory.load_halfword(address),
+                    "lw" => self.memory.load_word(address),
+                    "lbu" => self.memory.load_byte_unsigned(address),
+                    "lhu" => self.memory.load_halfword_unsigned(address),
                     _ => 0,
                 };
             }
             MemRW::Write => match inst.name {
-                "sb" => self.memory.write_byte(address, data as u8),
-                "sh" => self.memory.write_halfword(address, data as u16),
-                "sw" => self.memory.write_word(address, data),
+                "sb" => self.memory.store_byte(address, data),
+                "sh" => self.memory.store_halfword(address, data),
+                "sw" => self.memory.store_word(address, data),
                 _ => (),
             },
             _ => memory = 0,
