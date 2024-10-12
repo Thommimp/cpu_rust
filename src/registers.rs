@@ -1,22 +1,14 @@
-const R_TYPE: u32 = 51;
-const IMM_TYPE: u32 = 19;
-const LOAD_TYPE: u32 = 3;
-const STORE_TYPE: u32 = 35;
-const BRANCH_TYPE: u32 = 99;
-const JAL_TYPE: u32 = 111;
-const JALR_TYPE: u32 = 103;
-const LUI_TYPE: u32 = 55;
-const AUIPC_TYPE: u32 = 23;
-const E_TYPE: u32 = 115;
+
+
 
 
 pub struct Registers {
-    data: [i32; 32], // 32 registers, each 32-bit (u32)
+    pub data: [i32; 32], // 32 registers, each 32-bit (u32)
 }
 
 impl Registers {
     // Creates a new Registers struct with all registers initialized to 0
-    pub fn new() -> Self {
+    pub fn new(capacity: usize) -> Self {
         Registers {
             data: [0; 32], // Initialize all 32 registers to 0
         }
@@ -38,34 +30,8 @@ impl Registers {
         }
     }
 
-    fn decode(&mut self, instruction: &u32) {
-        // let reg1: u32 = (0xF8000 & input) >> 15;
-        // let reg2: u32 = (0x1F00000 & input) >> 20;
-        // let rd: u32 = (0xF80 & input) >> 7;
-        // let funct7: u32 = (0xFE000000 & input) >> 25;
-        // let funct3: u32 = (0x7000 & input) >> 12;
 
-        let opcode = instruction & 0x7F;
-
-        self.set(1, -16);
-        self.set(2, 100);
-
-        match opcode {
-            R_TYPE => {
-                // R-Type opcode
-                // Pass registers as a struct to the R_code function
-
-                self.R_code(&instruction);
-            }
-            IMM_TYPE => {
-                // Handle I-Type instructions
-                self.Imm_code(&instruction);
-            }
-            _ => {} // Handle other opcode cases if needed
-        }
-    }
-
-    fn R_code(&mut self, instruction: &u32) {
+    pub fn R_code(&mut self, instruction: &u32) {
 
         let reg1: u32 = (0xF8000 & instruction) >> 15;
         let reg2: u32 = (0x1F00000 & instruction) >> 20;
@@ -170,7 +136,7 @@ impl Registers {
     }
 
 
-    fn Imm_code(&mut self, instruction: &u32) {
+    pub fn Imm_code(&mut self, instruction: &u32) {
 
         let rd = ((0xF80 & instruction) >> 7) as usize;
         //let rd = rd_u as usize;
@@ -270,9 +236,4 @@ let r1 = self.get(reg1 as usize);
         }
 }
 
-fn load_code(&mut self, instruction: &u32) {
-    
-}
-
-
-}
+    }
