@@ -1,9 +1,5 @@
 use std::fs;
 
-const BYTE_NAT_ALIGN: usize = 1;
-const WORD_NAT_ALIGN: usize = 2;
-const HALFWORD_NAT_ALIGN: usize = 4;
-
 pub struct Memory {
     data: Vec<u32>,
 }
