@@ -89,4 +89,34 @@ impl Memory {
 
         Ok(data.len())
     }
+
+    pub fn print_content(&self) {
+        let mut prev_word: u32 = 0;
+        let mut word: u32 = 0;
+        let mut repeat: bool = false;
+        println!("|=======|==========|");
+        println!("| addr  | data     |");
+        println!("|=======|==========|");
+        for (i, &next_word) in self.data.iter().enumerate() {
+            if i != 0 {
+                if word != next_word {
+                    repeat = false;
+                }
+                if (prev_word == word) & (word == next_word) & !repeat {
+                    println!("| {:>5} | {:^8} |", "...", "...");
+                    repeat = true;
+                } else if !repeat {
+                    println!("| {:5} | {:08x} |", (i - 1)*4, word);
+                }
+            }
+            prev_word = word;
+            word = next_word;
+        }
+        println!(
+            "| {:5} | {:08x} |",
+            (self.data.len()-1)*4,
+            self.data.last().unwrap()
+        );
+        println!("|=======|==========|");
+    }
 }
