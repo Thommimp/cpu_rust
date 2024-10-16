@@ -78,6 +78,33 @@ impl Pipeline {
             self.memwb.rd,
         )
     }
+    pub fn print_status(&self) {
+        let idex_inst = match self.idex.inst.clone() {
+            Some(i) => i.name,
+            None => "None",
+        };
+        let exmem_inst = match self.exmem.inst.clone() {
+            Some(i) => i.name,
+            None => "None",
+        };
+        let memwb_inst = match self.memwb.inst.clone() {
+            Some(i) => i.name,
+            None => "None",
+        };
+        println!("             |  IF/ID   |  ID/EX   |  EX/MEM  |  MEM/WB  | ");
+        println!("             |==========|==========|==========|==========| ");
+        println!("          pc | {:08X  } | {:08X  } | {:08X  } |        - | ", self.ifid.pc, self.idex.pc, self.exmem.pc_sum);
+        println!("      branch |        - |        - | {:8    } |        - | ", self.exmem.branch);
+        println!("      i_word | {:08X  } |        - |        - |        - | ", self.ifid.inst_word);
+        println!("        inst |        - | {:^8   } | {:^8   } | {:^8   } | ", idex_inst, exmem_inst, memwb_inst);
+        println!("          rd |        - | {:08X  } | {:08X  } | {:08X  } | ", self.idex.rd, self.exmem.rd, self.memwb.rd);
+        println!("        reg1 |        - | {:08X  } |        - |        - | ", self.idex.reg1);
+        println!("        reg2 |        - | {:08X  } |        - |        - | ", self.idex.reg2);
+        println!("         imm |        - | {:08X  } |        - |        - | ", self.idex.imm);
+        println!("  alu_result |        - |        - | {:08X  } | {:08X  } | ", self.exmem.alu_result, self.memwb.alu_result);
+        println!("  write_data |        - |        - | {:08X  } |        - | ", self.exmem.write_data);
+        println!("      memory |        - |        - | {:08X  } |        - | ", self.memwb.memory);
+    }
 }
 
 struct IfIdRegister {
