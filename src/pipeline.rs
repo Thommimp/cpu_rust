@@ -17,7 +17,11 @@ impl Pipeline {
         }
     }
     pub fn tick(&mut self) {
-        self.idex.pc = self.ifid.pc;
+        self.memwb.inst = self.exmem.inst.clone();
+        self.memwb.alu_result = self.exmem.alu_result;
+
+        self.exmem.inst = self.idex.inst.clone();
+
         self.idex.pc = self.ifid.pc;
     }
     pub fn update_ifid(&mut self, pc: u32, inst_word: u32) {
