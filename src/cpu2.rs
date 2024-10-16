@@ -14,13 +14,13 @@ pub struct Cpu {
 }
 
 impl Cpu {
-    pub fn new() -> Self {
+    pub fn new(memory_capacity: usize) -> Self {
         Cpu {
             clock: 0,
             x: [0; 32],
             pc: 0,
             pipeline: Pipeline::new(),
-            memory: Memory::new(4096),
+            memory: Memory::new(memory_capacity),
             halt: false,
         }
     }
