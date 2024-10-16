@@ -1,54 +1,54 @@
 use std::fs;
 
+const BYTE_NAT_ALIGN: usize = 1;
+const WORD_NAT_ALIGN: usize = 2;
+const HALFWORD_NAT_ALIGN: usize = 4;
+
 pub struct Memory {
-    data: Vec<u8>
+    data: Vec<u32>,
 }
 
 impl Memory {
     pub fn new(capacity: usize) -> Self {
         Memory {
-            data: vec![0; capacity / 4]
+            data: vec![0; capacity / 4],
         }
     }
 
     pub fn read_byte(&self, address: u32) -> u8 {
-        let index = address as usize;
-        self.data[index]
+        let index = (address / 4) as usize;
+        let offset = 8 * (3 - (address % 4));
+        (self.data[index] >> offset) as u8
     }
 
     pub fn read_halfword(&self, address: u32) -> u16 {
-        let index = address as usize;
-        (self.data[index] as u16)
-            | ((self.data[index+1] as u16) << 8)
+        let index = (address / 4) as usize;
+        let offset = 16 * (3 - (address % 2));
+        (self.data[index] >> offset) as u16
     }
 
     pub fn read_word(&self, address: u32) -> u32 {
-        let index = address as usize;
-        (self.data[index] as u32)
-            | ((self.data[index+1] as u32) << 8)
-            | ((self.data[index+2] as u32) << 16)
-            | ((self.data[index+3] as u32) << 24)
+        let index = (address / 4) as usize;
+        self.data[index] as u32
     }
 
     pub fn write_byte(&mut self, address: u32, data: u8) {
-        let index = address as usize;
-        self.data[index] = data as u8;
+        let index = (address / 4) as usize;
+        let offset = 8 * (address % 4);
+        self.data[index] |= (data as u32) << offset;
     }
 
     pub fn write_halfword(&mut self, address: u32, data: u16) {
-        let index = address as usize;
-        self.data[index] = data as u8;
-        self.data[index+1] = (data >> 8) as u8;
+        let index = (address / 4) as usize;
+        let offset = 16 * (address % 2);
+        self.data[index] |= (data as u32) << offset;
     }
 
     pub fn write_word(&mut self, address: u32, data: u32) {
-        let index = address as usize;
-        self.data[index] = data as u8;
-        self.data[index+1] = (data >> 8) as u8;
-        self.data[index+2] = (data >> 8) as u8;
-        self.data[index+3] = (data >> 8) as u8;
+        let index = (address / 4) as usize;
+        self.data[index] = data;
     }
-    
+
     pub fn load_byte(&self, address: u32) -> u32 {
         (self.read_byte(address) as i32) as u32
     }
@@ -73,13 +73,20 @@ impl Memory {
     pub fn store_word(&mut self, address: u32, data: u32) {
         self.write_word(address, data)
     }
-    
-    pub fn load_from_file(&mut self, path: &str) -> Result<usize, String>{
-        let program = fs::read(path).map_err(|e| format!("Failed to read file: {}", e))?;
-        if self.data.len() < program.len() {
+
+    pub fn load_from_file(&mut self, path: &str) -> Result<usize, String> {
+        let file = fs::read(path).map_err(|e| format!("Failed to read file: {}", e))?;
+        if self.data.len() < file.len() {
             return Err(String::from("Program is to large for the memory capacity"));
         }
-        self.data[0..program.len()].copy_from_slice(&program);
-        Ok(program.len()/4)
+        assert!(file.len() % 4 == 0, "Length of file is not correct");
+        let data: Vec<u32> = file
+            .chunks_exact(4)
+            .map(|chunk| u32::from_le_bytes(chunk.try_into().unwrap()))
+            .collect();
+
+        self.data[0..data.len()].copy_from_slice(&data);
+
+        Ok(data.len())
     }
 }
