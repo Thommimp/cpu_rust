@@ -27,7 +27,6 @@ pub struct Instruction {
     pub decode: fn(i_word: u32) -> InstructionArg,
     pub ex_src: ExSrc,
     pub execute: fn(op_1: u32, op_2: u32) -> u32,
-    pub mem_rw: MemRW,
     pub wb_src: WBSrc,
 }
 
@@ -35,12 +34,6 @@ pub struct Instruction {
 pub enum ExSrc {
     Reg2,
     Imm,
-    None,
-}
-#[derive(Clone)]
-pub enum MemRW {
-    Read,
-    Write,
     None,
 }
 #[derive(Clone)]
@@ -68,7 +61,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_u_type,
         ex_src: ExSrc::None,
         execute: op_add,
-        mem_rw: MemRW::None,
         wb_src: WBSrc::Result,
     },
     Instruction {
@@ -78,7 +70,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_u_type,
         ex_src: ExSrc::None,
         execute: op_add,
-        mem_rw: MemRW::None,
         wb_src: WBSrc::Result,
     },
     Instruction {
@@ -88,7 +79,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_j_type,
         ex_src: ExSrc::None,
         execute: op_add,
-        mem_rw: MemRW::None,
         wb_src: WBSrc::Result,
     },
     Instruction {
@@ -98,7 +88,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_i_type,
         ex_src: ExSrc::None,
         execute: op_add,
-        mem_rw: MemRW::None,
         wb_src: WBSrc::Result,
     },
     Instruction {
@@ -108,7 +97,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_b_type,
         ex_src: ExSrc::Reg2,
         execute: op_beq,
-        mem_rw: MemRW::None,
         wb_src: WBSrc::None,
     },
     Instruction {
@@ -118,7 +106,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_b_type,
         ex_src: ExSrc::Reg2,
         execute: op_bne,
-        mem_rw: MemRW::None,
         wb_src: WBSrc::None,
     },
     Instruction {
@@ -128,7 +115,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_b_type,
         ex_src: ExSrc::Reg2,
         execute: op_blt,
-        mem_rw: MemRW::None,
         wb_src: WBSrc::None,
     },
     Instruction {
@@ -138,7 +124,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_b_type,
         ex_src: ExSrc::Reg2,
         execute: op_bge,
-        mem_rw: MemRW::None,
         wb_src: WBSrc::None,
     },
     Instruction {
@@ -148,7 +133,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_b_type,
         ex_src: ExSrc::Reg2,
         execute: op_bltu,
-        mem_rw: MemRW::None,
         wb_src: WBSrc::None,
     },
     Instruction {
@@ -158,7 +142,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_b_type,
         ex_src: ExSrc::Reg2,
         execute: op_bgeu,
-        mem_rw: MemRW::None,
         wb_src: WBSrc::None,
     },
     Instruction {
@@ -168,7 +151,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_i_type,
         ex_src: ExSrc::Imm,
         execute: op_add,
-        mem_rw: MemRW::Read,
         wb_src: WBSrc::Memory,
     },
     Instruction {
@@ -178,7 +160,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_i_type,
         ex_src: ExSrc::Imm,
         execute: op_add,
-        mem_rw: MemRW::Read,
         wb_src: WBSrc::Memory,
     },
     Instruction {
@@ -188,7 +169,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_i_type,
         ex_src: ExSrc::Imm,
         execute: op_add,
-        mem_rw: MemRW::Read,
         wb_src: WBSrc::Memory,
     },
     Instruction {
@@ -198,7 +178,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_i_type,
         ex_src: ExSrc::Imm,
         execute: op_add,
-        mem_rw: MemRW::Read,
         wb_src: WBSrc::Memory,
     },
     Instruction {
@@ -208,7 +187,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_i_type,
         ex_src: ExSrc::Imm,
         execute: op_add,
-        mem_rw: MemRW::Read,
         wb_src: WBSrc::Memory,
     },
     Instruction {
@@ -218,7 +196,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_s_type,
         ex_src: ExSrc::Imm,
         execute: op_add,
-        mem_rw: MemRW::Write,
         wb_src: WBSrc::None,
     },
     Instruction {
@@ -228,7 +205,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_s_type,
         ex_src: ExSrc::Imm,
         execute: op_add,
-        mem_rw: MemRW::Write,
         wb_src: WBSrc::None,
     },
     Instruction {
@@ -238,7 +214,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_s_type,
         ex_src: ExSrc::Imm,
         execute: op_add,
-        mem_rw: MemRW::Write,
         wb_src: WBSrc::Result,
     },
     Instruction {
@@ -248,7 +223,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_i_type,
         ex_src: ExSrc::Imm,
         execute: op_add,
-        mem_rw: MemRW::None,
         wb_src: WBSrc::Result,
     },
     Instruction {
@@ -258,7 +232,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_i_type,
         ex_src: ExSrc::Imm,
         execute: op_slt,
-        mem_rw: MemRW::None,
         wb_src: WBSrc::Result,
     },
     Instruction {
@@ -268,7 +241,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_i_type,
         ex_src: ExSrc::Imm,
         execute: op_sltu,
-        mem_rw: MemRW::None,
         wb_src: WBSrc::Result,
     },
     Instruction {
@@ -278,7 +250,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_i_type,
         ex_src: ExSrc::Imm,
         execute: op_xor,
-        mem_rw: MemRW::None,
         wb_src: WBSrc::Result,
     },
     Instruction {
@@ -288,7 +259,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_i_type,
         ex_src: ExSrc::Imm,
         execute: op_or,
-        mem_rw: MemRW::None,
         wb_src: WBSrc::Result,
     },
     Instruction {
@@ -298,7 +268,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_i_type,
         ex_src: ExSrc::Imm,
         execute: op_and,
-        mem_rw: MemRW::None,
         wb_src: WBSrc::Result,
     },
     Instruction {
@@ -308,7 +277,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_r_type,
         ex_src: ExSrc::Imm,
         execute: op_sll,
-        mem_rw: MemRW::None,
         wb_src: WBSrc::Result,
     },
     Instruction {
@@ -318,7 +286,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_r_type,
         ex_src: ExSrc::Imm,
         execute: op_srl,
-        mem_rw: MemRW::None,
         wb_src: WBSrc::Result,
     },
     Instruction {
@@ -328,7 +295,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_r_type,
         ex_src: ExSrc::Imm,
         execute: op_sra,
-        mem_rw: MemRW::None,
         wb_src: WBSrc::Result,
     },
     Instruction {
@@ -338,7 +304,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_r_type,
         ex_src: ExSrc::Reg2,
         execute: op_add,
-        mem_rw: MemRW::None,
         wb_src: WBSrc::Result,
     },
     Instruction {
@@ -348,7 +313,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_r_type,
         ex_src: ExSrc::Reg2,
         execute: op_sub,
-        mem_rw: MemRW::None,
         wb_src: WBSrc::Result,
     },
     Instruction {
@@ -358,7 +322,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_r_type,
         ex_src: ExSrc::Reg2,
         execute: op_sll,
-        mem_rw: MemRW::None,
         wb_src: WBSrc::Result,
     },
     Instruction {
@@ -368,7 +331,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_r_type,
         ex_src: ExSrc::Reg2,
         execute: op_slt,
-        mem_rw: MemRW::None,
         wb_src: WBSrc::Result,
     },
     Instruction {
@@ -378,7 +340,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_r_type,
         ex_src: ExSrc::Reg2,
         execute: op_slt,
-        mem_rw: MemRW::None,
         wb_src: WBSrc::Result,
     },
     Instruction {
@@ -388,7 +349,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_r_type,
         ex_src: ExSrc::Reg2,
         execute: op_xor,
-        mem_rw: MemRW::None,
         wb_src: WBSrc::Result,
     },
     Instruction {
@@ -398,7 +358,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_r_type,
         ex_src: ExSrc::Reg2,
         execute: op_srl,
-        mem_rw: MemRW::None,
         wb_src: WBSrc::Result,
     },
     Instruction {
@@ -408,7 +367,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_r_type,
         ex_src: ExSrc::Reg2,
         execute: op_sra,
-        mem_rw: MemRW::None,
         wb_src: WBSrc::Result,
     },
     Instruction {
@@ -418,7 +376,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_r_type,
         ex_src: ExSrc::Reg2,
         execute: op_or,
-        mem_rw: MemRW::None,
         wb_src: WBSrc::Result,
     },
     Instruction {
@@ -428,7 +385,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_r_type,
         ex_src: ExSrc::Reg2,
         execute: op_and,
-        mem_rw: MemRW::None,
         wb_src: WBSrc::Result,
     },
     Instruction {
@@ -438,7 +394,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_i_type,
         ex_src: ExSrc::None,
         execute: op_add,
-        mem_rw: MemRW::None,
         wb_src: WBSrc::None,
     },
     Instruction {
@@ -448,7 +403,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_i_type,
         ex_src: ExSrc::None,
         execute: op_add,
-        mem_rw: MemRW::None,
         wb_src: WBSrc::None,
     },
     Instruction {
@@ -458,7 +412,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_i_type,
         ex_src: ExSrc::None,
         execute: op_add,
-        mem_rw: MemRW::None,
         wb_src: WBSrc::None,
     },
     Instruction {
@@ -468,7 +421,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_i_type,
         ex_src: ExSrc::None,
         execute: op_add,
-        mem_rw: MemRW::None,
         wb_src: WBSrc::None,
     },
     Instruction {
@@ -478,7 +430,6 @@ pub const INSTRUCTIONS: &[Instruction] = &[
         decode: decode_i_type,
         ex_src: ExSrc::None,
         execute: op_add,
-        mem_rw: MemRW::None,
         wb_src: WBSrc::None,
     },
 ];

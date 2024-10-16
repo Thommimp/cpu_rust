@@ -86,24 +86,16 @@ impl Cpu {
         };
         let (address, data) = self.pipeline.get_memory_arg();
         let mut memory: u32 = 0;
-        match inst.mem_rw {
-            MemRW::Read => {
-                memory = match inst.name {
-                    "lb" => self.memory.load_byte(address),
-                    "lh" => self.memory.load_halfword(address),
-                    "lw" => self.memory.load_word(address),
-                    "lbu" => self.memory.load_byte_unsigned(address),
-                    "lhu" => self.memory.load_halfword_unsigned(address),
-                    _ => 0,
-                };
-            }
-            MemRW::Write => match inst.name {
-                "sb" => self.memory.store_byte(address, data),
-                "sh" => self.memory.store_halfword(address, data),
-                "sw" => self.memory.store_word(address, data),
-                _ => (),
-            },
-            _ => memory = 0,
+        match inst.name {
+            "lb" =>  memory = self.memory.load_byte(address),
+            "lh" =>  memory = self.memory.load_halfword(address),
+            "lw" =>  memory = self.memory.load_word(address),
+            "lbu" => memory = self.memory.load_byte_unsigned(address),
+            "lhu" => memory = self.memory.load_halfword_unsigned(address),
+            "sb" =>  self.memory.store_byte(address, data),
+            "sh" =>  self.memory.store_halfword(address, data),
+            "sw" =>  self.memory.store_word(address, data),
+            _ => (),
         };
         self.pipeline.update_memwb(memory);
     }
