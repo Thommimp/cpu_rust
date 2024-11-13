@@ -24,8 +24,8 @@ impl Cpu {
             halt: false,
         }
     }
-    pub fn load_from_file(&mut self, path: &str) -> Result<usize, String> {
-        self.memory.load_from_file(path)
+    pub fn load_file(&mut self, path: &str) -> Result<usize, String> {
+        self.memory.load_file(path)
     }
 
     fn read_register(&mut self, reg: usize) -> u32 {
