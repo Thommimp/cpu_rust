@@ -1,96 +1,160 @@
-use crate::memory::Memory;  // Import Memory module from the src directory
-use crate::registers::Registers;  // Import Registers module from the src directory
+use std::string::String;
 
-const R_TYPE: u32 = 51;
-const IMM_TYPE: u32 = 19;
-const LOAD_TYPE: u32 = 3;
-const STORE_TYPE: u32 = 35;
-const BRANCH_TYPE: u32 = 99;
-const JAL_TYPE: u32 = 111;
-const JALR_TYPE: u32 = 103;
-const LUI_TYPE: u32 = 55;
-const AUIPC_TYPE: u32 = 23;
-const E_TYPE: u32 = 115;
+use crate::pipeline::Pipeline;
+use crate::memory::Memory;
+use crate::isa::*;
 
-pub struct CPU {
-    pub registers: Registers,
-    pub memory: Memory,
+pub struct Cpu {
+    clock: usize,
+    x: [u32; 32],
+    pc: u32,
+    pipeline: Pipeline,
+    memory: Memory,
+    halt: bool,
 }
 
-impl CPU {
-    pub fn new(memory_size: usize) -> Self {
-        CPU {
-            registers: Registers::new(32),
-            memory: Memory::new(memory_size),
+impl Cpu {
+    pub fn new(memory_capacity: usize) -> Self {
+        Cpu {
+            clock: 0,
+            x: [0; 32],
+            pc: 0,
+            pipeline: Pipeline::new(),
+            memory: Memory::new(memory_capacity),
+            halt: false,
         }
     }
-
-    pub fn execute_instruction(&mut self, instruction: &u32) {
-        let opcode = instruction & 0x7F;
-        
-        match opcode {
-            R_TYPE => {
-                // Call the function that handles R-Type instructions
-                self.registers.R_code(&instruction);
-            }
-            IMM_TYPE => {
-                self.registers.Imm_code(&instruction);
-            }
-            LOAD_TYPE => {
-                self.load_code(&instruction); // Now this method can access both memory and registers
-            }
-            _ => {}
-        }
+    pub fn load_from_file(&mut self, path: &str) -> Result<usize, String> {
+        self.memory.load_from_file(path)
     }
 
-
-
-
-    fn load_code(&mut self, instruction: &u32) {
-        let rd = ((0xF80 & instruction) >> 7) as usize;
-        let funct3: u32 = (0x7000 & instruction) >> 12;
-        let reg1: u32 = (0xF8000 & instruction) >> 15;
-        let imm: u32 = (0xFFF00000 & instruction) >> 20;
-
-        let r1 = self.registers.get(reg1 as usize);
-        let address = (r1 as u32).wrapping_add(imm);
-
-        //println!("{:?}",  address);
-
-        match funct3 {
-            0 => {
-                let byte = self.memory.read_byte(address);
-                self.registers.set(rd, byte as i32);
-                println!("LB executed");
+    fn read_register(&mut self, reg: usize) -> u32 {
+        self.x[reg]
+    }
+    fn write_register(&mut self, value: u32, reg: usize) {
+        self.x[reg] = value
+    }
+    pub fn tick(&mut self) -> Result<(), String> {
+        self.write_back();
+        self.memory_access();
+        self.execute();
+        let _ = self.decode();
+        self.fetch();
+        self.pipeline.tick();
+        Ok(())
+    }
+    fn fetch(&mut self) {
+        self.pc += 4;
+        let i_word: u32 = self.memory.read_word(self.pc);
+        self.pipeline.update_ifid(self.pc, i_word);
+    }
+    fn decode(&mut self) -> Result<(), String> {
+        let i_word = self.pipeline.get_inst_word();
+        let inst = {
+            match phrase_instruction(i_word) {
+                Ok(inst) => inst,
+                Err(e) => return Err(e),
             }
+        };
+        let arg = (inst.decode)(i_word);
+        let reg1 = self.read_register(arg.rs1);
+        let reg2 = self.read_register(arg.rs2);
+        self.pipeline
+            .update_idex(Some(inst), reg1, reg2, arg.imm, arg.rd);
+        Ok(())
+    }
+    fn execute(&mut self) {
+        let inst = match self.pipeline.get_execute_instruction() {
+            Some(i) => i,
+            None => return,
+        };
+        let (reg1, reg2, imm) = self.pipeline.get_execute_arguments();
 
-            1 => {
-                let half_word = self.memory.read_halfword(address);
-                self.registers.set(rd, half_word as i32);
-                println!("{:b}", half_word);
-                println!("LH executed");
-
-            }
-
-            2 => {
-                let word = self.memory.read_word(address);
-                self.registers.set(rd, word as i32);
-                println!("{:b}", word);
-            }
-
-            4 => {
-                let byte_u = self.memory.read_byte(address);
-                self.registers.set(rd, byte_u as i32);
-                println!("LBU");
-
-            }
-
-            5 => {
-                let half_word_u = self.memory.read_halfword(address);
-                self.registers.set(rd, half_word_u as i32);
-                println!("LHU");
-            }
-            _ => {}
+        let op_1 = reg1;
+        let op_2 = match inst.ex_src {
+            ExSrc::Reg2 => reg2,
+            ExSrc::Imm => imm,
+            _ => 0,
+        };
+        let result = (inst.execute)(op_1, op_2);
+        self.pipeline.update_exmem(result)
+    }
+    fn memory_access(&mut self) {
+        let inst = match self.pipeline.get_memory_instruction() {
+            Some(i) => i,
+            None => return,
+        };
+        let (address, data) = self.pipeline.get_memory_arg();
+        let mut memory: u32 = 0;
+        match inst.name {
+            "lb" =>  memory = self.memory.load_byte(address),
+            "lh" =>  memory = self.memory.load_halfword(address),
+            "lw" =>  memory = self.memory.load_word(address),
+            "lbu" => memory = self.memory.load_byte_unsigned(address),
+            "lhu" => memory = self.memory.load_halfword_unsigned(address),
+            "sb" =>  self.memory.store_byte(address, data),
+            "sh" =>  self.memory.store_halfword(address, data),
+            "sw" =>  self.memory.store_word(address, data),
+            _ => (),
+        };
+        self.pipeline.update_memwb(memory);
+    }
+    fn write_back(&mut self) {
+        let inst = match self.pipeline.get_writeback_instruction() {
+            Some(i) => i,
+            None => return,
+        };
+        let (result, memory, rd) = self.pipeline.get_writeback_arg();
+        match inst.wb_src {
+            WBSrc::Result => self.x[rd] = result,
+            WBSrc::Memory => self.x[rd] = memory,
+            _ => (),
+        };
+    }
+    fn print_status(&self) {
+        println!("|-----------|");
+        for i in 31..0 {
+            println!("| R{:02}: {:5}|", i, self.x[i]);
         }
+        println!("| PC: {:6}|", self.pc);
     }
 }
+
+pub fn get_register_alias(register: usize) -> &'static str {
+    match register {
+        0 => "zero",
+        1 => "ra",
+        2 => "sp",
+        3 => "gp",
+        4 => "tp",
+        5 => "t0",
+        6 => "t1",
+        7 => "t2",
+        8 => "s0",
+        9 => "s1",
+        10 => "a0",
+        11 => "a1",
+        12 => "a2",
+        13 => "a3",
+        14 => "a4",
+        15 => "a5",
+        16 => "a6",
+        17 => "a7",
+        18 => "s2",
+        19 => "s3",
+        20 => "s4",
+        21 => "s5",
+        22 => "s6",
+        23 => "s7",
+        24 => "s8",
+        25 => "s9",
+        26 => "s10",
+        27 => "s11",
+        28 => "t3",
+        29 => "t4",
+        30 => "t5",
+        31 => "t6",
+        _ => ""
+    }
+}
+
