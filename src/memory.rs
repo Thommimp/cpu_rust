@@ -83,7 +83,7 @@ impl Memory {
 
         self.data[0..data.len()].copy_from_slice(&data);
 
-        Ok(data.len())
+        Ok(file.len())
     }
 
     pub fn print_content(&self) {
