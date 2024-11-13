@@ -70,7 +70,7 @@ impl Memory {
         self.write_word(address, data)
     }
 
-    pub fn load_from_file(&mut self, path: &str) -> Result<usize, String> {
+    pub fn load_file(&mut self, path: &str) -> Result<usize, String> {
         let file = fs::read(path).map_err(|e| format!("Failed to read file: {}", e))?;
         if self.data.len() < file.len() {
             return Err(String::from("Program is to large for the memory capacity"));
