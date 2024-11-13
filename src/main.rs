@@ -23,5 +23,13 @@ fn main() -> io::Result<()> {
         }
     }
 
+    while !cpu.halt() {
+
+        match cpu.tick() {
+            Ok(()) => continue,
+            Err(e) => eprintln!("{}",e),
+        }
+    }
+
     Ok(())
 }

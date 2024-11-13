@@ -28,6 +28,10 @@ impl Cpu {
         self.memory.load_file(path)
     }
 
+    pub fn halt(&self) -> bool {
+        return self.halt;
+    }
+
     fn read_register(&mut self, reg: usize) -> u32 {
         self.x[reg]
     }
