@@ -8,3 +8,4 @@ loop:
         lui     a3, 16
         addi    a7, a3, -256
         lui     t0, 4080
+        ecall

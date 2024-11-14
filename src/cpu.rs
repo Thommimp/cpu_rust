@@ -1,14 +1,15 @@
 use std::string::String;
 
-use crate::pipeline::Pipeline;
 use crate::memory::Memory;
-use crate::isa::*;
+use crate::register_file::RegisterFile;
+use crate::{isa::*, MEMORY_CAPACITY};
 
 pub struct Cpu {
     clock: usize,
-    x: [u32; 32],
+    registers: RegisterFile,
     pc: u32,
-    pipeline: Pipeline,
+    ir: u32,
+    inst: Instruction,
     memory: Memory,
     halt: bool,
 }
@@ -17,9 +18,10 @@ impl Cpu {
     pub fn new(memory_capacity: usize) -> Self {
         Cpu {
             clock: 0,
-            x: [0; 32],
+            registers: RegisterFile::new(),
             pc: 0,
-            pipeline: Pipeline::new(),
+            ir: 0,
+            inst: Instruction::None,
             memory: Memory::new(memory_capacity),
             halt: false,
         }
@@ -32,133 +34,270 @@ impl Cpu {
         return self.halt;
     }
 
-    fn read_register(&mut self, reg: usize) -> u32 {
-        self.x[reg]
+    pub fn init(& mut self) {
+        self.registers.set(2, (MEMORY_CAPACITY/2-1) as u32);
     }
-    fn write_register(&mut self, value: u32, reg: usize) {
-        self.x[reg] = value
-    }
+
     pub fn tick(&mut self) -> Result<(), String> {
-        self.write_back();
-        self.memory_access();
-        self.execute();
-        let _ = self.decode();
         self.fetch();
-        self.pipeline.tick();
+        self.decode().unwrap();
+        self.execute();
+        self.disassemble();
+        self.clock += 1;
         Ok(())
     }
+
     fn fetch(&mut self) {
+        self.ir = self.memory.load_word(self.pc);
         self.pc += 4;
-        let i_word: u32 = self.memory.read_word(self.pc);
-        self.pipeline.update_ifid(self.pc, i_word);
     }
+
     fn decode(&mut self) -> Result<(), String> {
-        let i_word = self.pipeline.get_inst_word();
-        let inst = {
-            match phrase_instruction(i_word) {
+        self.inst = {
+            match phrase_instruction(self.ir) {
                 Ok(inst) => inst,
                 Err(e) => return Err(e),
             }
         };
-        let arg = (inst.decode)(i_word);
-        let reg1 = self.read_register(arg.rs1);
-        let reg2 = self.read_register(arg.rs2);
-        self.pipeline
-            .update_idex(Some(inst), reg1, reg2, arg.imm, arg.rd);
         Ok(())
     }
+
     fn execute(&mut self) {
-        let inst = match self.pipeline.get_execute_instruction() {
-            Some(i) => i,
-            None => return,
-        };
-        let (reg1, reg2, imm) = self.pipeline.get_execute_arguments();
-
-        let op_1 = reg1;
-        let op_2 = match inst.ex_src {
-            ExSrc::Reg2 => reg2,
-            ExSrc::Imm => imm,
-            _ => 0,
-        };
-        let result = (inst.execute)(op_1, op_2);
-        self.pipeline.update_exmem(result)
-    }
-    fn memory_access(&mut self) {
-        let inst = match self.pipeline.get_memory_instruction() {
-            Some(i) => i,
-            None => return,
-        };
-        let (address, data) = self.pipeline.get_memory_arg();
-        let mut memory: u32 = 0;
-        match inst.name {
-            "lb" =>  memory = self.memory.load_byte(address),
-            "lh" =>  memory = self.memory.load_halfword(address),
-            "lw" =>  memory = self.memory.load_word(address),
-            "lbu" => memory = self.memory.load_byte_unsigned(address),
-            "lhu" => memory = self.memory.load_halfword_unsigned(address),
-            "sb" =>  self.memory.store_byte(address, data),
-            "sh" =>  self.memory.store_halfword(address, data),
-            "sw" =>  self.memory.store_word(address, data),
-            _ => (),
-        };
-        self.pipeline.update_memwb(memory);
-    }
-    fn write_back(&mut self) {
-        let inst = match self.pipeline.get_writeback_instruction() {
-            Some(i) => i,
-            None => return,
-        };
-        let (result, memory, rd) = self.pipeline.get_writeback_arg();
-        match inst.wb_src {
-            WBSrc::Result => self.x[rd] = result,
-            WBSrc::Memory => self.x[rd] = memory,
-            _ => (),
-        };
-    }
-    fn print_status(&self) {
-        println!("|-----------|");
-        for i in 31..0 {
-            println!("| R{:02}: {:5}|", i, self.x[i]);
+        match &self.inst {
+            Instruction::Lui(arg) => {
+                self.registers.set(arg.rd, arg.imm << 12);
+            },
+            Instruction::Auipc(arg) => {
+                self.registers.set(arg.rd, self.pc.wrapping_add(arg.imm << 12));
+            },
+            Instruction::Jal(arg) => {
+                self.registers.set(arg.rd, self.pc + 4);
+                self.pc = self.pc.wrapping_add(arg.imm);
+            },
+            Instruction::Jalr(arg) => {
+                self.registers.set(arg.rd, self.pc + 4);
+                self.pc = self.registers.get(arg.rs1).wrapping_add(arg.imm);
+            },
+            Instruction::Beq(arg) => {
+                let op_a = self.registers.get(arg.rs1);
+                let op_b = self.registers.get(arg.rs2);
+                if op_a == op_b {
+                    self.pc = self.pc.wrapping_add(arg.imm);
+                }
+            },
+            Instruction::Bne(arg) => {
+                let op_a = self.registers.get(arg.rs1);
+                let op_b = self.registers.get(arg.rs2);
+                if op_a != op_b {
+                    self.pc = self.pc.wrapping_add(arg.imm);
+                }
+            },
+            Instruction::Blt(arg) => {
+                let op_a = self.registers.get(arg.rs1) as i32;
+                let op_b = self.registers.get(arg.rs2) as i32;
+                if op_a < op_b {
+                    self.pc = self.pc.wrapping_add(arg.imm);
+                }
+            },
+            Instruction::Bge(arg) => {
+                let op_a = self.registers.get(arg.rs1) as i32;
+                let op_b = self.registers.get(arg.rs2) as i32;
+                if op_a >= op_b {
+                    self.pc = self.pc.wrapping_add(arg.imm);
+                }
+            },
+            Instruction::Bltu(arg) => {
+                let op_a = self.registers.get(arg.rs1);
+                let op_b = self.registers.get(arg.rs2);
+                if op_a < op_b {
+                    self.pc = self.pc.wrapping_add(arg.imm);
+                }
+            },
+            Instruction::Bgeu(arg) => {
+                let op_a = self.registers.get(arg.rs1);
+                let op_b = self.registers.get(arg.rs2);
+                if op_a >= op_b {
+                    self.pc = self.pc.wrapping_add(arg.imm);
+                }
+            },
+            Instruction::Lb(arg) => {
+                let addr = self.registers.get(arg.rs1);
+                let data = self.memory.load_byte(addr);
+                self.registers.set(arg.rd, data);
+            },
+            Instruction::Lh(arg) => {
+                let addr = self.registers.get(arg.rs1);
+                let data = self.memory.load_halfword(addr);
+                self.registers.set(arg.rd, data);
+            },
+            Instruction::Lw(arg) => {
+                let addr = self.registers.get(arg.rs1);
+                let data = self.memory.load_word(addr);
+                self.registers.set(arg.rd, data);
+            },
+            Instruction::Lbu(arg) => {
+                let addr = self.registers.get(arg.rs1);
+                let data = self.memory.load_byte_unsigned(addr);
+                self.registers.set(arg.rd, data);
+            },
+            Instruction::Lhu(arg) => {
+                let addr = self.registers.get(arg.rs1);
+                let data = self.memory.load_halfword_unsigned(addr);
+                self.registers.set(arg.rd, data);
+            },
+            Instruction::Sb(arg) => {
+                let addr = self.registers.get(arg.rs1);
+                let data = self.registers.get(arg.rs2);
+                self.memory.store_byte(addr, data);
+            },
+            Instruction::Sh(arg) => {
+                let addr = self.registers.get(arg.rs1);
+                let data = self.registers.get(arg.rs2);
+                self.memory.store_halfword(addr, data);
+            },
+            Instruction::Sw(arg) => {
+                let addr = self.registers.get(arg.rs1);
+                let data = self.registers.get(arg.rs2);
+                self.memory.store_word(addr, data);
+            },
+            Instruction::Addi(arg) => {
+                let op_a = self.registers.get(arg.rs1);
+                let op_b = arg.imm;
+                self.registers.set(arg.rd, op_a.wrapping_add(op_b));
+            },
+            Instruction::Slti(arg) => {
+                let op_a = self.registers.get(arg.rs1) as i32;
+                let op_b = arg.imm as i32;
+                if op_a < op_b {
+                    self.registers.set(arg.rd, 1);
+                } else {
+                    self.registers.set(arg.rd, 0);
+                }
+            },
+            Instruction::Sltiu(arg) => {
+                let op_a = self.registers.get(arg.rs1);
+                let op_b = arg.imm;
+                if op_a < op_b {
+                    self.registers.set(arg.rd, 1);
+                } else {
+                    self.registers.set(arg.rd, 0);
+                }
+            },
+            Instruction::Xori(arg) => {
+                let op_a = self.registers.get(arg.rs1);
+                let op_b = arg.imm;
+                self.registers.set(arg.rd, op_a ^ op_b);
+            },
+            Instruction::Ori(arg) => {
+                let op_a = self.registers.get(arg.rs1);
+                let op_b = arg.imm;
+                self.registers.set(arg.rd, op_a | op_b);
+            },
+            Instruction::Andi(arg) => {
+                let op_a = self.registers.get(arg.rs1);
+                let op_b = arg.imm;
+                self.registers.set(arg.rd, op_a & op_b);
+            },
+            Instruction::Slli(arg) => {
+                let op_a = self.registers.get(arg.rs1);
+                let shift = arg.imm & 0x1f;
+                self.registers.set(arg.rd, op_a << shift);
+            },
+            Instruction::Srli(arg) => {
+                let op_a = self.registers.get(arg.rs1);
+                let shift = arg.imm & 0x1f;
+                self.registers.set(arg.rd, op_a >> shift);
+            },
+            Instruction::Srai(arg) => {
+                let op_a = self.registers.get(arg.rs1) as i32;
+                let shift = arg.imm & 0x1f;
+                self.registers.set(arg.rd, (op_a >> shift) as u32);
+            },
+            Instruction::Add(arg) => {
+                let op_a = self.registers.get(arg.rs1);
+                let op_b = self.registers.get(arg.rs2);
+                self.registers.set(arg.rd, op_a.wrapping_add(op_b));
+            },
+            Instruction::Sub(arg) => {
+                let op_a = self.registers.get(arg.rs1);
+                let op_b = self.registers.get(arg.rs2);
+                self.registers.set(arg.rd, op_a.wrapping_sub(op_b));
+            },
+            Instruction::Sll(arg) => {
+                let op_a = self.registers.get(arg.rs1);
+                let shift = self.registers.get(arg.rs2) & 0x1f;
+                self.registers.set(arg.rd, op_a << shift);
+            },
+            Instruction::Slt(arg) => {
+                let op_a = self.registers.get(arg.rs1) as i32;
+                let op_b = self.registers.get(arg.rs2) as i32;
+                if op_a < op_b {
+                    self.registers.set(arg.rd, 1);
+                } else {
+                    self.registers.set(arg.rd, 0);
+                }
+            },
+            Instruction::Sltu(arg) => {
+                let op_a = self.registers.get(arg.rs1);
+                let op_b = self.registers.get(arg.rs2);
+                if op_a < op_b {
+                    self.registers.set(arg.rd, 1);
+                } else {
+                    self.registers.set(arg.rd, 0);
+                }
+            },
+            Instruction::Xor(arg) => {
+                let op_a = self.registers.get(arg.rs1);
+                let op_b = self.registers.get(arg.rs2);
+                self.registers.set(arg.rd, op_a ^ op_b);
+            },
+            Instruction::Srl(arg) => {
+                let op_a = self.registers.get(arg.rs1);
+                let shift = self.registers.get(arg.rs2) & 0x1f;
+                self.registers.set(arg.rd, op_a >> shift);
+            },
+            Instruction::Sra(arg) => {
+                let op_a = self.registers.get(arg.rs1) as i32;
+                let shift = self.registers.get(arg.rs2) & 0x1f;
+                self.registers.set(arg.rd, (op_a >> shift) as u32);
+            },
+            Instruction::Or(arg) => {
+                let op_a = self.registers.get(arg.rs1);
+                let op_b = self.registers.get(arg.rs2);
+                self.registers.set(arg.rd, op_a | op_b);
+            },
+            Instruction::And(arg) => {
+                let op_a = self.registers.get(arg.rs1);
+                let op_b = self.registers.get(arg.rs2);
+                self.registers.set(arg.rd, op_a & op_b);
+            },
+            Instruction::Fence(_arg) => {
+            },
+            Instruction::FenceTso => {
+            },
+            Instruction::Pause => {
+                self.halt = true;
+            },
+            Instruction::Ecall => {
+                self.halt = true;
+            },
+            Instruction::Ebreak => {
+                self.halt = true;
+            },
+            _ => {},
         }
-        println!("| PC: {:6}|", self.pc);
     }
-}
 
-pub fn get_register_alias(register: usize) -> &'static str {
-    match register {
-        0 => "zero",
-        1 => "ra",
-        2 => "sp",
-        3 => "gp",
-        4 => "tp",
-        5 => "t0",
-        6 => "t1",
-        7 => "t2",
-        8 => "s0",
-        9 => "s1",
-        10 => "a0",
-        11 => "a1",
-        12 => "a2",
-        13 => "a3",
-        14 => "a4",
-        15 => "a5",
-        16 => "a6",
-        17 => "a7",
-        18 => "s2",
-        19 => "s3",
-        20 => "s4",
-        21 => "s5",
-        22 => "s6",
-        23 => "s7",
-        24 => "s8",
-        25 => "s9",
-        26 => "s10",
-        27 => "s11",
-        28 => "t3",
-        29 => "t4",
-        30 => "t5",
-        31 => "t6",
-        _ => ""
+    pub fn disassemble (&self) {
+        self.inst.print();
     }
-}
 
+    pub fn print_memory (&self) {
+        self.memory.print()
+    }
+
+    pub fn print_status (&self) {
+        self.registers.print();
+    }
+    
+}

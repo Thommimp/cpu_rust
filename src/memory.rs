@@ -11,36 +11,36 @@ impl Memory {
         }
     }
 
-    pub fn read_byte(&self, address: u32) -> u8 {
+    fn read_byte(&self, address: u32) -> u8 {
         let index = (address / 4) as usize;
         let offset = 8 * (3 - (address % 4));
         (self.data[index] >> offset) as u8
     }
 
-    pub fn read_halfword(&self, address: u32) -> u16 {
+    fn read_halfword(&self, address: u32) -> u16 {
         let index = (address / 4) as usize;
         let offset = 16 * (3 - (address % 2));
         (self.data[index] >> offset) as u16
     }
 
-    pub fn read_word(&self, address: u32) -> u32 {
+    fn read_word(&self, address: u32) -> u32 {
         let index = (address / 4) as usize;
         self.data[index] as u32
     }
 
-    pub fn write_byte(&mut self, address: u32, data: u8) {
+    fn write_byte(&mut self, address: u32, data: u8) {
         let index = (address / 4) as usize;
         let offset = 8 * (address % 4);
         self.data[index] |= (data as u32) << offset;
     }
 
-    pub fn write_halfword(&mut self, address: u32, data: u16) {
+    fn write_halfword(&mut self, address: u32, data: u16) {
         let index = (address / 4) as usize;
         let offset = 16 * (address % 2);
         self.data[index] |= (data as u32) << offset;
     }
 
-    pub fn write_word(&mut self, address: u32, data: u32) {
+    fn write_word(&mut self, address: u32, data: u32) {
         let index = (address / 4) as usize;
         self.data[index] = data;
     }
@@ -86,7 +86,7 @@ impl Memory {
         Ok(file.len())
     }
 
-    pub fn print_content(&self) {
+    pub fn print(&self) {
         let mut prev_word: u32 = 0;
         let mut word: u32 = 0;
         let mut repeat: bool = false;
