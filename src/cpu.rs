@@ -28,14 +28,18 @@ impl Cpu {
         cpu.registers.set(2, ((memory_capacity/2)-1) as u32);
         return cpu;
     }
+
+    // Wrapper fn for the Memory load_file method
     pub fn load_file(&mut self, path: &str) -> Result<usize, String> {
         self.memory.load_file(path)
     }
 
+    // returns halt status
     pub fn halt(&self) -> bool {
         return self.halt;
     }
 
+    // tick fn to execute one clock cycle of the cpu
     pub fn tick(&mut self) -> Result<(), String> {
         self.fetch();
         self.decode().unwrap();
@@ -45,11 +49,13 @@ impl Cpu {
         Ok(())
     }
 
+    // fetch fn to fetch the next instruction and then increment the program counter by +4
     fn fetch(&mut self) {
         self.ir = self.memory.load_word(self.pc);
         self.pc += 4;
     }
 
+    // decode fn to decode the word from the fetch into a Instruction
     fn decode(&mut self) -> Result<(), String> {
         self.inst = {
             match Instruction::decode(self.ir) {
@@ -60,6 +66,7 @@ impl Cpu {
         Ok(())
     }
 
+    // execute fn to make the operation specified by the inst
     fn execute(&mut self) {
         match &self.inst {
             Instruction::Lui(arg) => {
@@ -287,6 +294,7 @@ impl Cpu {
     }
 
     pub fn disassemble (&self) {
+    // wrapper to print the Instruction
         self.inst.print();
     }
 
