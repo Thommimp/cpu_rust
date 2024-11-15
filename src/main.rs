@@ -36,6 +36,7 @@ fn main() -> io::Result<()> {
 
     // print the content of registers and memory
     cpu.print_status();
+    cpu.print_memory();
 
     Ok(())
 }
