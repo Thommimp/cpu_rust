@@ -90,27 +90,27 @@ impl Memory {
         let mut prev_word: u32 = 0;
         let mut word: u32 = 0;
         let mut repeat: bool = false;
-        println!("|=======|==========|");
-        println!("| addr  | data     |");
-        println!("|=======|==========|");
+        println!("|======|==========|");
+        println!("| addr | data     |");
+        println!("|======|==========|");
         for (i, &next_word) in self.data.iter().enumerate() {
             if i != 0 {
                 if word != next_word {
                     repeat = false;
                 }
                 if (prev_word == word) & (word == next_word) & !repeat {
-                    println!("| {:>5} | {:^8} |", "...", "...");
+                    println!("| {:>4} | {:^8} |", "...", "...");
                     repeat = true;
                 } else if !repeat {
-                    println!("| {:5} | {:08x} |", (i - 1)*4, word);
+                    println!("| {:04x} | {:08x} |", (i - 1) * 4, word);
                 }
             }
             prev_word = word;
             word = next_word;
         }
         println!(
-            "| {:5} | {:08x} |",
-            (self.data.len()-1)*4,
+            "| {:04x} | {:08x} |",
+            (self.data.len() - 1) * 4,
             self.data.last().unwrap()
         );
         println!("|=======|==========|");
