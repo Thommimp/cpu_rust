@@ -1,16 +1,15 @@
 use std::io;
 
 mod cpu;
+mod isa;
 mod memory;
 mod register_file;
-mod isa;
 
 use cpu::Cpu;
 
 const MEMORY_CAPACITY: usize = 4096;
 
 fn main() -> io::Result<()> {
-
     // cunstruct the Cpu struct
     let mut cpu = Cpu::new(MEMORY_CAPACITY);
     cpu.init();
@@ -26,11 +25,10 @@ fn main() -> io::Result<()> {
 
     // tick loop - loops until Cpu.halt is true
     while !cpu.halt() {
-
         // executes one tick
         match cpu.tick() {
             Ok(()) => continue,
-            Err(e) => eprintln!("{}",e),
+            Err(e) => eprintln!("{}", e),
         }
     }
 

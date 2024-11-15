@@ -62,7 +62,6 @@ const EBREAK: u32 = 0x00100073;
 const FENCE_TSO: u32 = 0x8330000f;
 const FENCE: u32 = 0x0000000f;
 
-
 pub struct RType {
     pub rd: usize,
     pub rs1: usize,
@@ -154,7 +153,6 @@ pub struct UType {
 }
 
 impl UType {
-
     pub fn decode(i_word: u32) -> Self {
         UType {
             rd: ((i_word & RD_MASK) >> RD_POS) as usize,
@@ -227,7 +225,6 @@ pub enum Instruction {
 }
 
 impl Instruction {
-
     pub fn decode(i_word: u32) -> Result<Self, String> {
         let inst = match i_word & OP_MASK {
             LUI => Instruction::Lui(UType::decode(i_word)),
@@ -320,7 +317,6 @@ impl Instruction {
         }
     }
 
-
     pub fn print(&self) {
         println!("{}", self.mnemonic());
     }
@@ -371,10 +367,6 @@ impl Instruction {
             _ => String::from(""),
         }
     }
-
-
-
-
 }
 
 pub fn get_register_alias(register: usize) -> &'static str {

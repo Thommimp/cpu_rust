@@ -6,9 +6,7 @@ pub struct RegisterFile {
 
 impl RegisterFile {
     pub fn new() -> Self {
-        RegisterFile {
-            x: [0; 32],
-        }
+        RegisterFile { x: [0; 32] }
     }
 
     pub fn set(&mut self, index: usize, value: u32) {
