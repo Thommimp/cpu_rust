@@ -293,8 +293,8 @@ impl Cpu {
         }
     }
 
-    pub fn disassemble (&self) {
     // wrapper to print the Instruction
+    fn disassemble (&self) {
         self.inst.print();
     }
 
