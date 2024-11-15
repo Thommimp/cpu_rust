@@ -2,7 +2,7 @@ use std::string::String;
 
 use crate::memory::Memory;
 use crate::register_file::RegisterFile;
-use crate::{isa::*, MEMORY_CAPACITY};
+use crate::isa::Instruction;
 
 pub struct Cpu {
     clock: usize,
@@ -54,7 +54,7 @@ impl Cpu {
 
     fn decode(&mut self) -> Result<(), String> {
         self.inst = {
-            match phrase_instruction(self.ir) {
+            match Instruction::decode(self.ir) {
                 Ok(inst) => inst,
                 Err(e) => return Err(e),
             }

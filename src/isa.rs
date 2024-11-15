@@ -62,97 +62,6 @@ const EBREAK: u32 = 0x00100073;
 const FENCE_TSO: u32 = 0x8330000f;
 const FENCE: u32 = 0x0000000f;
 
-pub fn phrase_instruction(i_word: u32) -> Result<Instruction, String> {
-    let inst = match i_word & OP_MASK {
-        LUI => Instruction::Lui(UType::decode(i_word)),
-        AUIPC => Instruction::Auipc(UType::decode(i_word)),
-        JAL => Instruction::Jal(UType::decode_j(i_word)),
-        JALR => Instruction::Jalr(IType::decode(i_word)),
-        BRANCH => {
-            let func = i_word & FN3_MASK;
-            match func {
-                BNE => Instruction::Bne(SType::decode_b(i_word)),
-                BEQ => Instruction::Beq(SType::decode_b(i_word)),
-                BLT => Instruction::Blt(SType::decode_b(i_word)),
-                BGE => Instruction::Bge(SType::decode_b(i_word)),
-                BLTU => Instruction::Bltu(SType::decode_b(i_word)),
-                BGEU => Instruction::Bgeu(SType::decode_b(i_word)),
-                _ => Instruction::None,
-            }
-        }
-        LOAD => {
-            let func = i_word & FN3_MASK;
-            match func {
-                LB => Instruction::Lb(IType::decode(i_word)),
-                LH => Instruction::Lh(IType::decode(i_word)),
-                LW => Instruction::Lw(IType::decode(i_word)),
-                LBU => Instruction::Lbu(IType::decode(i_word)),
-                LHU => Instruction::Lhu(IType::decode(i_word)),
-                _ => Instruction::None,
-            }
-        }
-        STORE => {
-            let func = i_word & FN3_MASK;
-            match func {
-                SB => Instruction::Sb(SType::decode(i_word)),
-                SH => Instruction::Sh(SType::decode(i_word)),
-                SW => Instruction::Sw(SType::decode(i_word)),
-                _ => Instruction::None,
-            }
-        }
-        OP_IMM => {
-            let func = i_word & FN3_MASK;
-            match func {
-                ADDI => Instruction::Addi(IType::decode(i_word)),
-                SLTI => Instruction::Slti(IType::decode(i_word)),
-                SLTIU => Instruction::Sltiu(IType::decode(i_word)),
-                XORI => Instruction::Xori(IType::decode(i_word)),
-                ORI => Instruction::Ori(IType::decode(i_word)),
-                ANDI => Instruction::Andi(IType::decode(i_word)),
-                _ => {
-                    let func7 = func | (i_word & FN7_MASK);
-                    match func7 {
-                        SLLI => Instruction::Slli(IType::decode(i_word)),
-                        SRLI => Instruction::Srli(IType::decode(i_word)),
-                        SRAI => Instruction::Srai(IType::decode(i_word)),
-                        _ => Instruction::None,
-                    }
-                }
-            }
-        }
-        OP => {
-            let func = i_word & (FN3_MASK | FN7_MASK);
-            match func {
-                ADD => Instruction::Add(RType::decode(i_word)),
-                SUB => Instruction::Sub(RType::decode(i_word)),
-                SLL => Instruction::Sll(RType::decode(i_word)),
-                SLT => Instruction::Slt(RType::decode(i_word)),
-                SLTU => Instruction::Sltu(RType::decode(i_word)),
-                XOR => Instruction::Xor(RType::decode(i_word)),
-                SRL => Instruction::Srl(RType::decode(i_word)),
-                SRA => Instruction::Sra(RType::decode(i_word)),
-                OR => Instruction::Or(RType::decode(i_word)),
-                AND => Instruction::And(RType::decode(i_word)),
-                _ => Instruction::None,
-            }
-        }
-        MEM => match i_word {
-            FENCE_TSO => Instruction::FenceTso,
-            _ => Instruction::Fence(i_word),
-        },
-        SYS => match i_word {
-            PAUSE => Instruction::Pause,
-            ECALL => Instruction::Ecall,
-            EBREAK => Instruction::Ebreak,
-            _ => Instruction::None,
-        },
-        _ => Instruction::None,
-    };
-    match inst {
-        Instruction::None => Err("Instruction not found".to_string()),
-        _ => Ok(inst),
-    }
-}
 
 pub struct RType {
     pub rd: usize,
@@ -318,6 +227,100 @@ pub enum Instruction {
 }
 
 impl Instruction {
+
+    pub fn decode(i_word: u32) -> Result<Self, String> {
+        let inst = match i_word & OP_MASK {
+            LUI => Instruction::Lui(UType::decode(i_word)),
+            AUIPC => Instruction::Auipc(UType::decode(i_word)),
+            JAL => Instruction::Jal(UType::decode_j(i_word)),
+            JALR => Instruction::Jalr(IType::decode(i_word)),
+            BRANCH => {
+                let func = i_word & FN3_MASK;
+                match func {
+                    BNE => Instruction::Bne(SType::decode_b(i_word)),
+                    BEQ => Instruction::Beq(SType::decode_b(i_word)),
+                    BLT => Instruction::Blt(SType::decode_b(i_word)),
+                    BGE => Instruction::Bge(SType::decode_b(i_word)),
+                    BLTU => Instruction::Bltu(SType::decode_b(i_word)),
+                    BGEU => Instruction::Bgeu(SType::decode_b(i_word)),
+                    _ => Instruction::None,
+                }
+            }
+            LOAD => {
+                let func = i_word & FN3_MASK;
+                match func {
+                    LB => Instruction::Lb(IType::decode(i_word)),
+                    LH => Instruction::Lh(IType::decode(i_word)),
+                    LW => Instruction::Lw(IType::decode(i_word)),
+                    LBU => Instruction::Lbu(IType::decode(i_word)),
+                    LHU => Instruction::Lhu(IType::decode(i_word)),
+                    _ => Instruction::None,
+                }
+            }
+            STORE => {
+                let func = i_word & FN3_MASK;
+                match func {
+                    SB => Instruction::Sb(SType::decode(i_word)),
+                    SH => Instruction::Sh(SType::decode(i_word)),
+                    SW => Instruction::Sw(SType::decode(i_word)),
+                    _ => Instruction::None,
+                }
+            }
+            OP_IMM => {
+                let func = i_word & FN3_MASK;
+                match func {
+                    ADDI => Instruction::Addi(IType::decode(i_word)),
+                    SLTI => Instruction::Slti(IType::decode(i_word)),
+                    SLTIU => Instruction::Sltiu(IType::decode(i_word)),
+                    XORI => Instruction::Xori(IType::decode(i_word)),
+                    ORI => Instruction::Ori(IType::decode(i_word)),
+                    ANDI => Instruction::Andi(IType::decode(i_word)),
+                    _ => {
+                        let func7 = func | (i_word & FN7_MASK);
+                        match func7 {
+                            SLLI => Instruction::Slli(IType::decode(i_word)),
+                            SRLI => Instruction::Srli(IType::decode(i_word)),
+                            SRAI => Instruction::Srai(IType::decode(i_word)),
+                            _ => Instruction::None,
+                        }
+                    }
+                }
+            }
+            OP => {
+                let func = i_word & (FN3_MASK | FN7_MASK);
+                match func {
+                    ADD => Instruction::Add(RType::decode(i_word)),
+                    SUB => Instruction::Sub(RType::decode(i_word)),
+                    SLL => Instruction::Sll(RType::decode(i_word)),
+                    SLT => Instruction::Slt(RType::decode(i_word)),
+                    SLTU => Instruction::Sltu(RType::decode(i_word)),
+                    XOR => Instruction::Xor(RType::decode(i_word)),
+                    SRL => Instruction::Srl(RType::decode(i_word)),
+                    SRA => Instruction::Sra(RType::decode(i_word)),
+                    OR => Instruction::Or(RType::decode(i_word)),
+                    AND => Instruction::And(RType::decode(i_word)),
+                    _ => Instruction::None,
+                }
+            }
+            MEM => match i_word {
+                FENCE_TSO => Instruction::FenceTso,
+                _ => Instruction::Fence(i_word),
+            },
+            SYS => match i_word {
+                PAUSE => Instruction::Pause,
+                ECALL => Instruction::Ecall,
+                EBREAK => Instruction::Ebreak,
+                _ => Instruction::None,
+            },
+            _ => Instruction::None,
+        };
+        match inst {
+            Instruction::None => Err("Instruction not found".to_string()),
+            _ => Ok(inst),
+        }
+    }
+
+
     pub fn print(&self) {
         println!("{}", self.mnemonic());
     }
@@ -368,6 +371,10 @@ impl Instruction {
             _ => String::from(""),
         }
     }
+
+
+
+
 }
 
 pub fn get_register_alias(register: usize) -> &'static str {
