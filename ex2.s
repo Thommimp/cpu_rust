@@ -1,4 +1,6 @@
-loop:
+main:
+        addi    s0, zero, 64
+        addi    s1, zero, 256
         addi    sp, sp, -16
         sw      s0, 12(sp)
         sw      s1, 8(sp)
