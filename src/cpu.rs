@@ -76,11 +76,11 @@ impl Cpu {
                 self.registers.set(arg.rd, self.pc.wrapping_add(arg.imm << 12));
             },
             Instruction::Jal(arg) => {
-                self.registers.set(arg.rd, self.pc + 4);
+                self.registers.set(arg.rd, self.pc);
                 self.pc = self.pc.wrapping_add(arg.imm);
             },
             Instruction::Jalr(arg) => {
-                self.registers.set(arg.rd, self.pc + 4);
+                self.registers.set(arg.rd, self.pc);
                 self.pc = self.registers.get(arg.rs1).wrapping_add(arg.imm);
             },
             Instruction::Beq(arg) => {
