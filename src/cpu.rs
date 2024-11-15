@@ -16,7 +16,7 @@ pub struct Cpu {
 
 impl Cpu {
     pub fn new(memory_capacity: usize) -> Self {
-        Cpu {
+        let mut cpu = Cpu {
             clock: 0,
             registers: RegisterFile::new(),
             pc: 0,
@@ -24,7 +24,9 @@ impl Cpu {
             inst: Instruction::None,
             memory: Memory::new(memory_capacity),
             halt: false,
-        }
+        };
+        cpu.registers.set(2, ((memory_capacity/2)-1) as u32);
+        return cpu;
     }
     pub fn load_file(&mut self, path: &str) -> Result<usize, String> {
         self.memory.load_file(path)
@@ -32,10 +34,6 @@ impl Cpu {
 
     pub fn halt(&self) -> bool {
         return self.halt;
-    }
-
-    pub fn init(& mut self) {
-        self.registers.set(2, (MEMORY_CAPACITY/2-1) as u32);
     }
 
     pub fn tick(&mut self) -> Result<(), String> {
