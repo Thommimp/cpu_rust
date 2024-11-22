@@ -71,32 +71,48 @@ impl Memory {
     }
 
     pub fn print(&self) {
-        let mut prev_word: u32 = 0;
-        let mut word: u32 = 0;
-        let mut repeat: bool = false;
-        println!("|======|==========|");
-        println!("| addr | data     |");
-        println!("|======|==========|");
-        for (i, &next_word) in self.data.iter().enumerate() {
-            if i != 0 {
-                if word != next_word {
-                    repeat = false;
+        const LINE_LEN: usize = 16;
+        let mut repeating = false;
+        let mut prev_line: Option<&[u8]> = None;
+        for (i, line) in self.data.chunks(LINE_LEN).enumerate() {
+            if let Some(prev) = prev_line {
+                if prev == line {
+                    if !repeating {
+                        println!("*");
+                        repeating = true;
+                    }
+                    continue;
                 }
-                if (prev_word == word) & (word == next_word) & !repeat {
-                    println!("| {:>4} | {:^8} |", "...", "...");
-                    repeat = true;
-                } else if !repeat {
-                    println!("| {:04x} | {:08x} |", (i - 1) * 4, word);
+                if repeating {
+                    print_line(i-1, prev);
+                    repeating = false;
                 }
             }
-            prev_word = word;
-            word = next_word;
+
+            print_line(i, line);
+            prev_line = Some(line);
         }
-        println!(
-            "| {:04x} | {:08x} |",
-            (self.data.len() - 1) * 4,
-            self.data.last().unwrap()
-        );
-        println!("|=======|==========|");
     }
+
+}
+
+fn print_line(line_number: usize, line: &[u8]) {
+
+    // Print address
+    print!("{:08x}: ", line_number * 16);
+
+    // Print hex bytes
+    for byte in line.chunks_exact(2) {
+        print!("{:02x}{:02x} ", byte[0], byte[1]);
+    }
+
+    for byte in line {
+        if byte.is_ascii_graphic() || byte.is_ascii_whitespace() {
+            print!("{}", *byte as char);
+        } else {
+            print!(".");
+        }
+    }
+
+    print!("\n");
 }
