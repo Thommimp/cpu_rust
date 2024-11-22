@@ -1,73 +1,63 @@
 use std::fs;
 
 pub struct Memory {
-    data: Vec<u32>,
+    data: Vec<u8>,
 }
 
 impl Memory {
     pub fn new(capacity: usize) -> Self {
         Memory {
-            data: vec![0; capacity / 4],
+            data: vec![0; capacity],
         }
     }
 
-    fn read_byte(&self, address: u32) -> u8 {
-        let index = (address / 4) as usize;
-        let offset = 8 * (3 - (address % 4));
-        (self.data[index] >> offset) as u8
+    fn read_byte(&self, addr: usize) -> u8 {
+        return self.data[addr] as u8
     }
 
-    fn read_halfword(&self, address: u32) -> u16 {
-        let index = (address / 4) as usize;
-        let offset = 16 * (3 - (address % 2));
-        (self.data[index] >> offset) as u16
+    fn read_halfword(&self, addr: usize) -> u16 {
+        return u16::from_le_bytes(self.data[addr..addr + 2].try_into().unwrap());
     }
 
-    fn read_word(&self, address: u32) -> u32 {
-        let index = (address / 4) as usize;
-        self.data[index] as u32
+    fn read_word(&self, addr: usize) -> u32 {
+        return u32::from_le_bytes(self.data[addr..addr + 4].try_into().unwrap());
     }
 
-    fn write_byte(&mut self, address: u32, data: u8) {
-        let index = (address / 4) as usize;
-        let offset = 8 * (address % 4);
-        self.data[index] |= (data as u32) << offset;
+    fn write_byte(&mut self, addr: usize, data: u8) {
+        self.data[addr] = data;
     }
 
-    fn write_halfword(&mut self, address: u32, data: u16) {
-        let index = (address / 4) as usize;
-        let offset = 16 * (address % 2);
-        self.data[index] |= (data as u32) << offset;
+    fn write_halfword(&mut self, addr: usize, data: u16) {
+        self.data[addr..addr + 2].copy_from_slice(&data.to_le_bytes());
     }
 
-    fn write_word(&mut self, address: u32, data: u32) {
-        let index = (address / 4) as usize;
-        self.data[index] = data;
+    fn write_word(&mut self, addr: usize, data: u32) {
+        self.data[addr..addr + 4].copy_from_slice(&data.to_le_bytes());
     }
 
-    pub fn load_byte(&self, address: u32) -> u32 {
-        (self.read_byte(address) as i32) as u32
+    pub fn load_byte(&self, addr: u32) -> u32 {
+        (self.read_byte(addr as usize) as i32) as u32
     }
-    pub fn load_halfword(&self, address: u32) -> u32 {
-        (self.read_halfword(address) as i32) as u32
+    pub fn load_halfword(&self, addr: u32) -> u32 {
+        (self.read_halfword(addr as usize) as i32) as u32
     }
-    pub fn load_word(&self, address: u32) -> u32 {
-        self.read_word(address)
+    pub fn load_word(&self, addr: u32) -> u32 {
+        self.read_word(addr as usize)
     }
-    pub fn load_byte_unsigned(&self, address: u32) -> u32 {
-        self.read_byte(address) as u32
+    pub fn load_byte_unsigned(&self, addr: u32) -> u32 {
+        self.read_byte(addr as usize) as u32
     }
-    pub fn load_halfword_unsigned(&self, address: u32) -> u32 {
-        self.read_halfword(address) as u32
+    pub fn load_halfword_unsigned(&self, addr: u32) -> u32 {
+        self.read_halfword(addr as usize) as u32
     }
-    pub fn store_byte(&mut self, address: u32, data: u32) {
-        self.write_byte(address, data as u8)
+    pub fn store_byte(&mut self, addr: u32, data: u32) {
+        self.write_byte(addr as usize, data as u8)
     }
-    pub fn store_halfword(&mut self, address: u32, data: u32) {
-        self.write_halfword(address, data as u16)
+    pub fn store_halfword(&mut self, addr: u32, data: u32) {
+        self.write_halfword(addr as usize, data as u16)
     }
-    pub fn store_word(&mut self, address: u32, data: u32) {
-        self.write_word(address, data)
+    pub fn store_word(&mut self, addr: u32, data: u32) {
+        self.write_word(addr as usize, data)
     }
 
     pub fn load_file(&mut self, path: &str) -> Result<usize, String> {
