@@ -61,19 +61,13 @@ impl Memory {
     }
 
     pub fn load_file(&mut self, path: &str) -> Result<usize, String> {
-        let file = fs::read(path).map_err(|e| format!("Failed to read file: {}", e))?;
-        if self.data.len() < file.len() {
+        let program = fs::read(path).map_err(|e| format!("Failed to read file: {}", e))?;
+        if self.data.len() < program.len() {
             return Err(String::from("Program is to large for the memory capacity"));
         }
-        assert!(file.len() % 4 == 0, "Length of file is not correct");
-        let data: Vec<u32> = file
-            .chunks_exact(4)
-            .map(|chunk| u32::from_le_bytes(chunk.try_into().unwrap()))
-            .collect();
+        self.data[0..program.len()].copy_from_slice(&program);
 
-        self.data[0..data.len()].copy_from_slice(&data);
-
-        Ok(file.len())
+        Ok(program.len())
     }
 
     pub fn print(&self) {
