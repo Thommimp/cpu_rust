@@ -5,6 +5,7 @@ pub struct RegisterFile {
 }
 
 impl RegisterFile {
+
     pub fn new() -> Self {
         RegisterFile { x: [0; 32] }
     }
@@ -22,6 +23,7 @@ impl RegisterFile {
             0
         }
     }
+
     pub fn print(&self) {
         println!("|------------------|");
         for (i, &value) in self.x.iter().enumerate().rev() {
