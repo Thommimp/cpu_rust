@@ -70,7 +70,7 @@ impl Cpu {
     fn execute(&mut self) {
         match &self.inst {
             Instruction::Lui(arg) => {
-                self.registers.set(arg.rd, arg.imm << 12);
+                self.registers.set(arg.rd, arg.imm);
             }
             Instruction::Auipc(arg) => {
                 self.registers
