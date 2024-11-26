@@ -280,10 +280,10 @@ impl Cpu {
             Instruction::Fence(_arg) => {}
             Instruction::FenceTso => {}
             Instruction::Pause => {}
-            Instruction::Ecall => {}
-            Instruction::Ebreak => {
+            Instruction::Ecall => {
                 self.halt = true;
             }
+            Instruction::Ebreak => {}
             _ => {}
         }
     }
