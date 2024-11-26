@@ -174,7 +174,7 @@ impl UType {
     }
     pub fn format(&self) -> String {
         let rd_alias = get_register_alias(self.rd);
-        return format!("{}, {}", rd_alias, self.imm as i32);
+        return format!("{}, {}", rd_alias, (self.imm as i32) >> 12);
     }
 }
 
