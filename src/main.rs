@@ -7,7 +7,7 @@ mod register_file;
 
 use cpu::Cpu;
 
-const MEMORY_CAPACITY: usize = 4*1024;
+const MEMORY_CAPACITY: usize = 1000*1024;
 
 fn main() -> io::Result<()> {
     // cunstruct the Cpu struct
