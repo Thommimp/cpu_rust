@@ -119,7 +119,7 @@ impl SType {
             rs1: ((inst & RS1_MASK) >> RS1_POS) as usize,
             rs2: ((inst & RS2_MASK) >> RS2_POS) as usize,
             imm: (((inst >> 7) & 0x1F)
-                | (inst >> 25)
+                | ((inst >> 20) & 0xFE0)
                 | (match inst & IMM_SIGN_MASK {
                     0 => 0,
                     _ => 0xFFFFF000,
@@ -132,7 +132,7 @@ impl SType {
             rs1: ((inst & RS1_MASK) >> RS1_POS) as usize,
             rs2: ((inst & RS2_MASK) >> RS2_POS) as usize,
             imm: (((inst & 0xF00) >> 7)
-                | ((inst & 0x7E000000) >> 25)
+                | ((inst & 0x7E000000) >> 20)
                 | ((inst & 0x80) << 4)
                 | (match inst & IMM_SIGN_MASK {
                     0 => 0,
@@ -140,6 +140,7 @@ impl SType {
                 })) as u32,
         }
     }
+
     pub fn format(&self) -> String {
         let rs1_alias = get_register_alias(self.rs1);
         let rs2_alias = get_register_alias(self.rs2);
