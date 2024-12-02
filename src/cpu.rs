@@ -125,42 +125,42 @@ impl Cpu {
                 }
             }
             Instruction::Lb(arg) => {
-                let addr = self.registers.get(arg.rs1);
+                let addr = self.registers.get(arg.rs1).wrapping_add(arg.imm);
                 let data = self.memory.load_byte(addr);
                 self.registers.set(arg.rd, data);
             }
             Instruction::Lh(arg) => {
-                let addr = self.registers.get(arg.rs1);
+                let addr = self.registers.get(arg.rs1).wrapping_add(arg.imm);
                 let data = self.memory.load_halfword(addr);
                 self.registers.set(arg.rd, data);
             }
             Instruction::Lw(arg) => {
-                let addr = self.registers.get(arg.rs1);
+                let addr = self.registers.get(arg.rs1).wrapping_add(arg.imm);
                 let data = self.memory.load_word(addr);
                 self.registers.set(arg.rd, data);
             }
             Instruction::Lbu(arg) => {
-                let addr = self.registers.get(arg.rs1);
+                let addr = self.registers.get(arg.rs1).wrapping_add(arg.imm);
                 let data = self.memory.load_byte_unsigned(addr);
                 self.registers.set(arg.rd, data);
             }
             Instruction::Lhu(arg) => {
-                let addr = self.registers.get(arg.rs1);
+                let addr = self.registers.get(arg.rs1).wrapping_add(arg.imm);
                 let data = self.memory.load_halfword_unsigned(addr);
                 self.registers.set(arg.rd, data);
             }
             Instruction::Sb(arg) => {
-                let addr = self.registers.get(arg.rs1);
+                let addr = self.registers.get(arg.rs1).wrapping_add(arg.imm);
                 let data = self.registers.get(arg.rs2);
                 self.memory.store_byte(addr, data);
             }
             Instruction::Sh(arg) => {
-                let addr = self.registers.get(arg.rs1);
+                let addr = self.registers.get(arg.rs1).wrapping_add(arg.imm);
                 let data = self.registers.get(arg.rs2);
                 self.memory.store_halfword(addr, data);
             }
             Instruction::Sw(arg) => {
-                let addr = self.registers.get(arg.rs1);
+                let addr = self.registers.get(arg.rs1).wrapping_add(arg.imm);
                 let data = self.registers.get(arg.rs2);
                 self.memory.store_word(addr, data);
             }
