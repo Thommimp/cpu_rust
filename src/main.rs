@@ -7,6 +7,7 @@ mod memory;
 mod register_file;
 
 use cpu::Cpu;
+use isa::get_register_alias;
 
 const MEMORY_CAPACITY: usize = 1200 * 1024;
 
@@ -58,12 +59,19 @@ fn main() -> io::Result<()> {
     if res_test {
         let reg_dump = cpu.dump_registers();
         res_file_path = &args[2];
-        let res = read_res_bin(res_file_path);
+        let res = read_res_bin(res_file_path).unwrap();
 
-        if reg_dump == res.unwrap() {
+        if reg_dump == res {
             println!("OK – all register values match the res binary")
         } else {
-            println!("ERR – some register values do not match the res binary")
+            println!("ERR – some register values do not match the res binary");
+            print!("Register ");
+            for (i, _) in reg_dump.iter().enumerate() {
+                if reg_dump[i] != res[i] {
+                    print!("{} ", get_register_alias(i))
+                }
+            }
+            print!("no not match\n");
         }
     }
 
