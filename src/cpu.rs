@@ -72,7 +72,7 @@ impl Cpu {
             }
             Instruction::Auipc(arg) => {
                 self.registers
-                    .set(arg.rd, self.pc.wrapping_add(arg.imm << 12));
+                    .set(arg.rd, (self.pc - 4).wrapping_add(arg.imm));
             }
             Instruction::Jal(arg) => {
                 self.registers.set(arg.rd, self.pc);
