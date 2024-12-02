@@ -177,6 +177,10 @@ impl UType {
         let rd_alias = get_register_alias(self.rd);
         return format!("{}, {}", rd_alias, (self.imm as i32) >> 12);
     }
+    pub fn format_j(&self) -> String {
+        let rd_alias = get_register_alias(self.rd);
+        return format!("{}, {}", rd_alias, (self.imm as i32));
+    }
 }
 
 pub enum Instruction {
@@ -325,7 +329,7 @@ impl Instruction {
         match self {
             Instruction::Lui(arg) => format!("lui {}", arg.format()),
             Instruction::Auipc(arg) => format!("auipc {}", arg.format()),
-            Instruction::Jal(arg) => format!("jal {}", arg.format()),
+            Instruction::Jal(arg) => format!("jal {}", arg.format_j()),
             Instruction::Jalr(arg) => format!("jalr {}", arg.format()),
             Instruction::Beq(arg) => format!("beq {}", arg.format()),
             Instruction::Bne(arg) => format!("bne {}", arg.format()),
