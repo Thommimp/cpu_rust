@@ -16,7 +16,7 @@ pub struct Cpu {
 
 impl Cpu {
     pub fn new(memory_capacity: usize) -> Self {
-        let mut cpu = Cpu {
+        return Cpu {
             clock: 0,
             registers: RegisterFile::new(),
             pc: 0,
@@ -25,8 +25,6 @@ impl Cpu {
             memory: Memory::new(memory_capacity),
             halt: false,
         };
-        cpu.registers.set(2, ((memory_capacity / 2) - 1) as u32);
-        return cpu;
     }
 
     // Wrapper fn for the Memory load_file method
