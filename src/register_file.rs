@@ -5,12 +5,14 @@ pub struct RegisterFile {
 }
 
 impl RegisterFile {
-
     pub fn new() -> Self {
         RegisterFile { x: [0; 32] }
     }
 
     pub fn set(&mut self, index: usize, value: u32) {
+        if index == 0 {
+            return;
+        };
         if index < 32 {
             self.x[index] = value;
         }
