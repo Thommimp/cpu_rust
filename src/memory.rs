@@ -12,7 +12,7 @@ impl Memory {
     }
 
     fn read_byte(&self, addr: usize) -> u8 {
-        return self.data[addr] as u8
+        return self.data[addr] as u8;
     }
 
     fn read_halfword(&self, addr: usize) -> u16 {
@@ -36,10 +36,10 @@ impl Memory {
     }
 
     pub fn load_byte(&self, addr: u32) -> u32 {
-        (self.read_byte(addr as usize) as i32) as u32
+        (self.read_byte(addr as usize) as i8) as u32
     }
     pub fn load_halfword(&self, addr: u32) -> u32 {
-        (self.read_halfword(addr as usize) as i32) as u32
+        (self.read_halfword(addr as usize) as i16) as u32
     }
     pub fn load_word(&self, addr: u32) -> u32 {
         self.read_word(addr as usize)
@@ -84,7 +84,7 @@ impl Memory {
                     continue;
                 }
                 if repeating {
-                    print_line(i-1, prev);
+                    print_line(i - 1, prev);
                     repeating = false;
                 }
             }
@@ -93,11 +93,9 @@ impl Memory {
             prev_line = Some(line);
         }
     }
-
 }
 
 fn print_line(line_number: usize, line: &[u8]) {
-
     // Print address
     print!("{:08x}: ", line_number * 16);
 
