@@ -76,7 +76,7 @@ impl Cpu {
             }
             Instruction::Jal(arg) => {
                 self.registers.set(arg.rd, self.pc);
-                self.pc = self.pc.wrapping_add(arg.imm);
+                self.pc = (self.pc - 4).wrapping_add(arg.imm);
             }
             Instruction::Jalr(arg) => {
                 self.registers.set(arg.rd, self.pc);
