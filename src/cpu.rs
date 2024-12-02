@@ -298,4 +298,8 @@ impl Cpu {
     pub fn print_status(&self) {
         self.registers.print();
     }
+
+    pub fn dump_registers(&self) -> [u32; 32] {
+        return self.registers.dump();
+    }
 }

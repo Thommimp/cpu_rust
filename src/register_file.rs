@@ -30,4 +30,8 @@ impl RegisterFile {
             println!("| {:>4}:  0x{:08x}|", get_register_alias(i), value);
         }
     }
+
+    pub fn dump(&self) -> [u32; 32] {
+        self.x
+    }
 }
