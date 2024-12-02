@@ -8,7 +8,7 @@ mod register_file;
 
 use cpu::Cpu;
 
-const MEMORY_CAPACITY: usize = 1000 * 1024;
+const MEMORY_CAPACITY: usize = 1200 * 1024;
 
 fn main() -> io::Result<()> {
     let args: Vec<String> = std::env::args().collect();
