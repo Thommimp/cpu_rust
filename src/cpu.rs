@@ -86,42 +86,42 @@ impl Cpu {
                 let op_a = self.registers.get(arg.rs1);
                 let op_b = self.registers.get(arg.rs2);
                 if op_a == op_b {
-                    self.pc = self.pc.wrapping_add(arg.imm);
+                    self.pc = (self.pc - 4).wrapping_add(arg.imm);
                 }
             }
             Instruction::Bne(arg) => {
                 let op_a = self.registers.get(arg.rs1);
                 let op_b = self.registers.get(arg.rs2);
                 if op_a != op_b {
-                    self.pc = self.pc.wrapping_add(arg.imm);
+                    self.pc = (self.pc - 4).wrapping_add(arg.imm);
                 }
             }
             Instruction::Blt(arg) => {
                 let op_a = self.registers.get(arg.rs1) as i32;
                 let op_b = self.registers.get(arg.rs2) as i32;
                 if op_a < op_b {
-                    self.pc = self.pc.wrapping_add(arg.imm);
+                    self.pc = (self.pc - 4).wrapping_add(arg.imm);
                 }
             }
             Instruction::Bge(arg) => {
                 let op_a = self.registers.get(arg.rs1) as i32;
                 let op_b = self.registers.get(arg.rs2) as i32;
                 if op_a >= op_b {
-                    self.pc = self.pc.wrapping_add(arg.imm);
+                    self.pc = (self.pc - 4).wrapping_add(arg.imm);
                 }
             }
             Instruction::Bltu(arg) => {
                 let op_a = self.registers.get(arg.rs1);
                 let op_b = self.registers.get(arg.rs2);
                 if op_a < op_b {
-                    self.pc = self.pc.wrapping_add(arg.imm);
+                    self.pc = (self.pc - 4).wrapping_add(arg.imm);
                 }
             }
             Instruction::Bgeu(arg) => {
                 let op_a = self.registers.get(arg.rs1);
                 let op_b = self.registers.get(arg.rs2);
                 if op_a >= op_b {
-                    self.pc = self.pc.wrapping_add(arg.imm);
+                    self.pc = (self.pc - 4).wrapping_add(arg.imm);
                 }
             }
             Instruction::Lb(arg) => {
