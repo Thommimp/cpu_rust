@@ -80,7 +80,7 @@ This project is for educational purposes. Please refer to your course guidelines
 
 ## Author
 
-Thommimp
+Thomas Pedersen & Jann Zachariasen 
 
 ---
 Feel free to expand this README with code samples or diagrams from the repo!
